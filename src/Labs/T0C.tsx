@@ -1,15 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+
 export default function TOC() {
-    return (
+  return (
+    <div>
+      <h2>Table of Contents</h2>
       <ul>
-        <li><Link to="/Labs">Labs</Link></li>
-        <li><Link to="/Labs/Lab1">Lab 1</Link></li>
-        <li><Link to="/Labs/Lab2">Lab 2</Link></li>
-        <li><Link to="/Labs/Lab3">Lab 3</Link></li>
-        <li><Link to="/Kanbas">Kanbas</Link></li>
+        <li><a href="#/Lab1">Lab 1</a></li>
+        <li><a href="#/Lab2">Lab 2</a></li>
+        <li><a href="#/Lab3">Lab 3</a></li>
+        <li><a href="#/Kanbas">Kanbas</a></li>
+        {/* Add link to your GitHub repository */}
+        <li>
+          <a 
+            href="https://github.com/lilzc/kanbas-react-web-app" 
+            id="wd-github" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            My GitHub Repository
+          </a>
+        </li>
       </ul>
-    );
-  }
-  
-  
+    </div>
+  );
+}
