@@ -107,14 +107,14 @@ Your favorite books (in no particular order)
   <h4>Image tag</h4>
   Loading an image from the internet:
   <br />
-  <img id="wd-starship"
+  <img id="wd-starship" alt="A chart showing growth over time" 
     width="400px"
    src="https://www.staradvertiser.com/wp-content/uploads/2021/08/web1_Starship-gap2.jpg"
   />
   <br />
   Loading a local image:
   <br />
-  <img id="wd-teslabot" src="desktop/teslabot.jpg" height="200px" />
+  <img src="your-image-url" alt="A chart showing growth over time" />
 </div>
       </div>
       <div id="wd-forms">
