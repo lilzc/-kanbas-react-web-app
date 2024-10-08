@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import './Assignments.css';
 
-export default function AssignmentEditor() {
+export default function Editor() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState({
