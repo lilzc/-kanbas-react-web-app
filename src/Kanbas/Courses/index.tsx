@@ -11,7 +11,6 @@ import { FaAlignJustify } from "react-icons/fa";
 
 
 
-
 function Courses() {
   const { courseId } = useParams();
   const { pathname } = useLocation();

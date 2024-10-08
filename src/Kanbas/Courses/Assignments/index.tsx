@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { FaSearch, FaEllipsisV, FaCheckCircle, FaPlusCircle } from 'react-icons/fa';
 import './Assignments.css';
 
+
 const assignments = [
   { _id: "A101", title: "A1 - ENV + HTML", description: "Environment Setup...", dueDate: "2023-09-18", availableFromDate: "2023-09-11", availableUntilDate: "2023-09-18" },
   { _id: "A102", title: "A2 - CSS + Bootstrap", description: "CSS Styling...", dueDate: "2023-09-25", availableFromDate: "2023-09-18", availableUntilDate: "2023-09-25" },
