@@ -6,8 +6,10 @@ import CourseNavigation from "./Navigation";
 import Modules from "./Modules/index";
 import Home from "./Home/index";
 import Assignments from "./Assignments/index";
-import Editor from "./Assignments/editor";
+import Editor from "./Assignments/Editor";
 import { FaAlignJustify } from "react-icons/fa";
+
+
 
 
 function Courses() {
