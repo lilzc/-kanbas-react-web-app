@@ -1,35 +1,51 @@
-import React, { useState } from 'react';
+import React from "react";
+import { MdDoNotDisturbAlt } from "react-icons/md";
+import { FaCheckCircle } from "react-icons/fa";
+import { BiImport } from "react-icons/bi";
+import { LiaFileImportSolid } from "react-icons/lia";
+import { BsPencilSquare } from "react-icons/bs";
+import { AiOutlineEye } from "react-icons/ai";
+import { FiSettings } from "react-icons/fi";
+import { VscMultipleWindows } from "react-icons/vsc";
+import { IoStatsChartOutline } from "react-icons/io5";
 
 export default function CourseStatus() {
-  const [isPublished, setIsPublished] = useState(false);
-  const [progress] = useState(60);  
-
-  const handlePublish = () => setIsPublished(true);
-  const handleUnpublish = () => setIsPublished(false);
-
   return (
-    <div id="wd-course-status" style={{ padding: '20px', border: '1px solid #ccc', backgroundColor: '#f9f9f9' }}>
+    <div id="wd-course-status" style={{ width: "300px" }}>
       <h2>Course Status</h2>
-      <p>Status: {isPublished ? 'Published' : 'Unpublished'}</p>
-      <p>Overall Course Progress: {progress}% complete</p>
-      <div style={{ width: '100%', backgroundColor: '#eee', marginBottom: '10px' }}>
-        <div
-          style={{
-            width: `${progress}%`,
-            backgroundColor: progress === 100 ? 'green' : 'blue',
-            height: '10px',
-          }}
-        />
+      <div className="d-flex">
+        <div className="w-50 pe-1">
+          <button className="btn btn-lg btn-secondary w-100 text-nowrap">
+            <MdDoNotDisturbAlt className="me-2 fs-5" /> Unpublish
+          </button>
+        </div>
+        <div className="w-50">
+          <button className="btn btn-lg btn-success w-100">
+            <FaCheckCircle className="me-2 fs-5" /> Publish
+          </button>
+        </div>
       </div>
-      <button onClick={handlePublish} disabled={isPublished} style={{ marginRight: '10px' }}>
-        Publish
+      <br />
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <BiImport className="me-2 fs-5" /> Import Existing Content
       </button>
-      <button onClick={handleUnpublish} disabled={!isPublished}>
-        Unpublish
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <LiaFileImportSolid className="me-2 fs-5" /> Import from Commons
       </button>
-
-      <button style={{ display: 'block', marginTop: '10px' }}>
-        View Course Notifications
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <BsPencilSquare className="me-2 fs-5" /> Choose Home Page
+      </button>
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <AiOutlineEye className="me-2 fs-5" /> View Course Stream
+      </button>
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <FiSettings className="me-2 fs-5" /> Course Settings
+      </button>
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <VscMultipleWindows className="me-2 fs-5" /> Course Setup Checklist
+      </button>
+      <button className="btn btn-lg btn-secondary w-100 mt-1 text-start">
+        <IoStatsChartOutline className="me-2 fs-5" /> View Course Analytics
       </button>
     </div>
   );

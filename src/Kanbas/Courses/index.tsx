@@ -1,33 +1,49 @@
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import Home from './Home';
-import Modules from './Modules';
-import Assignments from './Assignments/Assignments'; 
-import CoursesNavigation from './Navigation';
-import AssignmentEditor from './Assignments/Editor'; 
-export default function Courses() {
+
+import PeopleTable from "./People/Table";
+import React from "react";
+import { Routes, Route, useParams, useLocation } from "react-router-dom";
+import CourseNavigation from "./Navigation";
+import Modules from "./Modules";
+import Home from "./Home";
+import Assignments from "./Assignments";
+import AssignmentEditor from "./Assignments/editor";
+import { FaAlignJustify } from "react-icons/fa";
+
+
+function Courses() {
+  const { courseId } = useParams();
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    console.log("Current path:", pathname);
+  }, [pathname]);
+
   return (
-    <div id="wd-courses">
-      <h2>Course 1234</h2>
-      <hr />
-      <table>
-        <tbody>
-          <tr>
-            <td valign="top">
-              <CoursesNavigation />
-            </td>
-            <td valign="top">
-              <Routes>
-                <Route path="/" element={<Navigate to="Home" />} />
-                <Route path="Home" element={<Home />} />
-                <Route path="Modules" element={<Modules />} />
-                <Route path="Assignments" element={<Assignments />} />  {/* Add Assignments route */}
-                <Route path="Assignments/:aid" element={<AssignmentEditor />} />
-              </Routes>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="d-flex">
+      <div className="d-none d-md-block">
+        <CourseNavigation />
+      </div>
+      <div className="flex-grow-1 p-4">
+        <h2 className="mb-4">
+          <FaAlignJustify className="me-2" />
+          Course {courseId}
+        </h2>
+        <hr />
+        <div className="d-flex">
+          <div className="flex-grow-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="Home" element={<Home />} />
+              <Route path="Modules" element={<Modules />} />
+              <Route path="Assignments" element={<Assignments />} />
+              <Route path="Assignments/:assignmentId" element={<AssignmentEditor />} />
+            <Route path="People" element={<PeopleTable />} />
+          </Routes>
+        </div>
+      </div>
+    </div>
     </div>
   );
 }
+
+export default Courses;

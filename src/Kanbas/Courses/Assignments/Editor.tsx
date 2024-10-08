@@ -1,91 +1,200 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
+import './Assignments.css';
 
 export default function AssignmentEditor() {
+  const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
+  const [assignment, setAssignment] = useState({
+    name: "A1",
+    description: "The assignment is available online\nSubmit a link to the landing page of your Web application running on Netlify.\n\nThe landing page should include the following:\n• Your full name and section\n• Links to each of the lab assignments\n• Link to the Kanbas application\n• Links to all relevant source code repositories\n\nThe Kanbas application should include a link to navigate back to the landing page.",
+    points: 100,
+    assignmentGroup: "ASSIGNMENTS",
+    displayGrade: "Percentage",
+    submissionType: "Online",
+    onlineEntryOptions: {
+      textEntry: false,
+      websiteUrl: true,
+      mediaRecordings: false,
+      studentAnnotation: false,
+      fileUploads: false
+    },
+    assignTo: "Everyone",
+    dueDate: "2024-05-13T23:59",
+    availableFrom: "2024-05-06T00:00",
+    availableUntil: ""
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setAssignment(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setAssignment(prev => ({
+      ...prev,
+      onlineEntryOptions: { ...prev.onlineEntryOptions, [name]: checked }
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Assignment saved:", assignment);
+    navigate(`/Kanbas/Courses/${courseId}/Assignments`);
+  };
+
   return (
-    <div id="wd-assignments-editor">
-      <label htmlFor="wd-name">Assignment Name</label><br />
-      <input id="wd-name" defaultValue="A1 - ENV + HTML" /><br /><br />
+    <div className="container mt-4">
+      <h2>Assignment Name</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input 
+            type="text"
+            className="form-control"
+            name="name"
+            value={assignment.name}
+            onChange={handleInputChange}
+          />
+        </div>
 
-      <label htmlFor="wd-description">Assignment Description</label><br />
-      <textarea id="wd-description">
-        The assignment is available online. Submit a link to the landing page of your Web application running on Netlify. The landing page should include the following:
-        - Your full name and section
-        - Links to each of the lab assignments
-        - Link to the Kanbas application
-        - Links to all relevant source code repositories
-        The Kanbas application should include a link to navigate back to the landing page.
-      </textarea><br /><br />
+        <div className="mb-3">
+          <textarea 
+            className="form-control"
+            name="description"
+            rows={5}
+            value={assignment.description}
+            onChange={handleInputChange}
+          ></textarea>
+        </div>
 
-      <table>
-        <tbody>
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-points">Points</label></td>
-            <td><input id="wd-points" defaultValue={100} /></td>
-          </tr>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Points</label>
+          <div className="col-sm-9">
+            <input 
+              type="number"
+              className="form-control"
+              name="points"
+              value={assignment.points}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
 
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-group">Assignment Group</label></td>
-            <td>
-              <select id="wd-group">
-                <option value="assignments">Assignments</option>
-                <option value="quizzes">Quizzes</option>
-                <option value="projects">Projects</option>
-              </select>
-            </td>
-          </tr>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Assignment Group</label>
+          <div className="col-sm-9">
+            <select 
+              className="form-control"
+              name="assignmentGroup"
+              value={assignment.assignmentGroup}
+              onChange={handleInputChange}
+            >
+              <option>ASSIGNMENTS</option>
+            </select>
+          </div>
+        </div>
 
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-display-grade-as">Display Grade As</label></td>
-            <td>
-              <select id="wd-display-grade-as">
-                <option value="percentage">Percentage</option>
-                <option value="points">Points</option>
-              </select>
-            </td>
-          </tr>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Display Grade as</label>
+          <div className="col-sm-9">
+            <select 
+              className="form-control"
+              name="displayGrade"
+              value={assignment.displayGrade}
+              onChange={handleInputChange}
+            >
+              <option>Percentage</option>
+            </select>
+          </div>
+        </div>
 
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-submission-type">Submission Type</label></td>
-            <td>
-              <select id="wd-submission-type">
-                <option value="online">Online</option>
-                <option value="paper">On Paper</option>
-              </select>
-              <br />
-              <label>
-                <input type="checkbox" id="wd-text-entry" /> Text Entry
-              </label>
-              <br />
-              <label>
-                <input type="checkbox" id="wd-website-url" /> Website URL
-              </label>
-              <br />
-              <label>
-                <input type="checkbox" id="wd-media-recordings" /> Media Recordings
-              </label>
-              <br />
-              <label>
-                <input type="checkbox" id="wd-file-upload" /> File Uploads
-              </label>
-            </td>
-          </tr>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Submission Type</label>
+          <div className="col-sm-9">
+            <select 
+              className="form-control"
+              name="submissionType"
+              value={assignment.submissionType}
+              onChange={handleInputChange}
+            >
+              <option>Online</option>
+            </select>
+          </div>
+        </div>
 
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-assign-to">Assign To</label></td>
-            <td>
-              <select id="wd-assign-to">
-                <option value="everyone">Everyone</option>
-                <option value="specific-group">Specific Group</option>
-              </select>
-            </td>
-          </tr>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Online Entry Options</label>
+          <div className="col-sm-9">
+            {Object.entries(assignment.onlineEntryOptions).map(([key, value]) => (
+              <div className="form-check" key={key}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id={key}
+                  name={key}
+                  checked={value}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="form-check-label" htmlFor={key}>
+                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          <tr style={{ textAlign: 'right', verticalAlign: 'top' }}>
-            <td><label htmlFor="wd-due-date">Due Date</label></td>
-            <td><input id="wd-due-date" type="date" defaultValue="2024-05-13" /></td>
-          </tr>
-        </tbody>
-      </table>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-label">Assign</label>
+          <div className="col-sm-9">
+            <input 
+              type="text"
+              className="form-control"
+              name="assignTo"
+              value={assignment.assignTo}
+              onChange={handleInputChange}
+              readOnly
+            />
+            <div className="mt-2">
+              <label>Due</label>
+              <input 
+                type="datetime-local"
+                className="form-control"
+                name="dueDate"
+                value={assignment.dueDate}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="row mt-2">
+              <div className="col-6">
+                <label>Available from</label>
+                <input 
+                  type="datetime-local"
+                  className="form-control"
+                  name="availableFrom"
+                  value={assignment.availableFrom}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="col-6">
+                <label>Until</label>
+                <input 
+                  type="datetime-local"
+                  className="form-control"
+                  name="availableUntil"
+                  value={assignment.availableUntil}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="float-end">
+          <button type="button" className="btn btn-secondary me-2" onClick={() => navigate(`/Kanbas/Courses/${courseId}/Assignments`)}>Cancel</button>
+          <button type="submit" className="btn btn-danger">Save</button>
+        </div>
+      </form>
     </div>
   );
 }

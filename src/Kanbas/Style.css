@@ -1,0 +1,201 @@
+body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body * {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  #wd-kanbas-navigation {
+    width: 84px;
+  }
+  
+  #wd-kanbas-navigation .list-group-item {
+    padding: 10px 0;
+    border-radius: 0;
+  }
+  
+  #wd-kanbas-navigation .list-group-item:not(:first-child) {
+    margin-top: 4px;
+  }
+  
+  #wd-kanbas-navigation .list-group-item.active {
+    background-color: white;
+  }
+  
+  #wd-kanbas-navigation .list-group-item:hover:not(.active) {
+    background-color: #333;
+  }
+  
+  #wd-kanbas-navigation .list-group-item svg {
+    font-size: 1.75rem;
+    margin-bottom: 5px;
+  }
+  
+  #wd-kanbas-navigation .list-group-item .small {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+  
+  @media (min-width: 768px) {
+    #wd-kanbas .wd-main-content-offset {
+      margin-left: 84px;
+    }
+  }
+
+  #wd-dashboard {
+    margin-left: 90px; 
+  }
+  
+  #wd-dashboard-title, #wd-dashboard-published {
+    color: #333;
+  }
+  
+  .card {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .card-body h5 {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+  
+  .card-body p {
+    font-size: 0.9rem;
+  }
+  
+  .btn-light {
+    border: 1px solid #ddd;
+  }
+  
+  @media (max-width: 768px) {
+    #wd-dashboard {
+      margin-left: 0;
+    }
+  }
+
+  .wd-kanbas-navigation {
+    background-color: black;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+  }
+  
+  .wd-kanbas-navigation .list-group-item {
+    background-color: black;
+    border: none;
+    border-radius: 0;
+    color: white;
+  }
+  
+  .wd-kanbas-navigation .list-group-item:hover {
+    background-color: #333;
+  }
+  
+  .wd-kanbas-navigation .list-group-item.active {
+    background-color: white;
+    color: #d41b2c;
+  }
+  
+  .wd-kanbas-navigation .list-group-item.active .small {
+    color: #d41b2c;
+  }
+  
+  .wd-kanbas-navigation .list-group-item:not(.active) .small {
+    color: white;
+  }
+  
+  .wd-kanbas-navigation img {
+    max-width: 84px;
+    height: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .wd-kanbas-navigation {
+      display: none;
+    }
+  }
+
+  .wd.list-group > .list-group-item {
+    color: #d41b2c;
+    background-color: white;
+    border: none;
+    padding: 10px 20px;
+  }
+  
+  .wd.list-group > .list-group-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .wd.list-group > .list-group-item.active {
+    color: black;
+    background-color: white;
+    border-left: 3px solid black !important;
+  }
+  
+  #wd-courses-navigation {
+    width: 200px;
+  }
+  #wd-courses {
+    padding: 20px;
+  }
+  
+  #wd-courses .text-danger {
+    margin-bottom: 10px;
+  }
+  
+  #wd-courses hr {
+    margin-bottom: 20px;
+  }
+  
+  @media (max-width: 767px) {
+    #wd-courses .flex-grow-1 {
+      width: 100%;
+    }
+  }
+
+  .btn-secondary {
+    --bs-btn-color: #000;
+    --bs-btn-bg: #c7cdd1;
+    --bs-btn-border-color: #c7cdd1;
+    --bs-btn-hover-color: #fff;
+  }
+  
+  .bg-secondary {
+    --bs-secondary-rgb: 199, 205, 209;
+  }
+  
+  .list-group-item {
+    --bs-list-group-border-color: gray;
+  }
+  
+  .wd-lesson {
+    border-left: 3px solid green !important;
+  }
+  
+  #wd-modules .list-group-item {
+    border: none;
+  }
+  
+  #wd-modules .wd-module {
+    margin-bottom: 20px;
+  }
+  
+  #wd-modules .wd-title {
+    border: 1px solid gray;
+  }
+  
+  #wd-modules .wd-lessons {
+    border: 1px solid gray;
+    border-top: none;
+  }
+  
+  .wd-float-done {
+    clear: both;
+  }
+
+  

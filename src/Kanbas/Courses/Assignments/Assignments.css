@@ -1,0 +1,55 @@
+.wd-assignment-list {
+    border: none;
+  }
+  
+  .wd-assignment-item {
+    border-left: 5px solid green !important;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+  }
+  
+  .wd-assignment-title {
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+  }
+  
+  .wd-assignment-title:hover {
+    color: #0056b3;
+  }
+  
+  .wd-assign-to-box {
+    background-color: #f8f9fa;
+  }
+  
+
+  .wd-assignment-editor .form-label {
+    font-weight: bold;
+  }
+  
+  .wd-assignment-editor .form-control,
+  .wd-assignment-editor .form-select {
+    max-width: 300px;
+  }
+  
+  .wd-assignment-editor textarea.form-control {
+    max-width: 100%;
+  }
+  
+  .wd-assignment-editor .online-entry-options {
+    margin-left: 20px;
+  }
+  
+  .wd-assignment-editor .assign-to-box {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+  }
+
+  .list-group-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .list-group-item .text-dark:hover {
+    text-decoration: underline !important;
+  }

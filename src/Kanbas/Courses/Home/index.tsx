@@ -1,23 +1,18 @@
-import React from 'react';
-import Modules from '../Modules';
-import CourseStatus from './Status';
+import React from "react";
+import Modules from "../Modules";
+import CourseStatus from "./Status";
 
-export default function Home() {
+function Home() {
   return (
-    <table id="wd-home" style={{ width: '100%' }}>
-      <tbody>
-        <tr>
-          {/* First column: Modules */}
-          <td valign="top" style={{ width: '60%', padding: '10px' }}>
-            <Modules />
-          </td>
-
-          {/* Second column: Course Status */}
-          <td valign="top" style={{ width: '40%', padding: '10px' }}>
-            <CourseStatus />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div className="d-flex" id="wd-home">
+      <div className="flex-grow-1">
+        <Modules />
+      </div>
+      <div className="d-none d-md-block">
+        <CourseStatus />
+      </div>
+    </div>
   );
 }
+
+export default Home;

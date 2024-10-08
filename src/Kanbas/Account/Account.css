@@ -1,0 +1,100 @@
+#wd-kanbas-navigation {
+    background-color: black;
+    padding: 10px;
+    width: 80px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+  
+  #wd-kanbas-navigation a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  #wd-kanbas-navigation a:hover {
+    background-color: #333;
+  }
+  
+  #wd-neu-link {
+    font-size: 24px;
+    font-weight: bold;
+    color: red !important;
+    margin-bottom: 20px;
+  }
+  
+  /* Add icons if needed */
+  #wd-kanbas-navigation a::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 5px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  /* Example for account icon, repeat for others */
+  #wd-account-link::before {
+    background-image: url('https://brand.northeastern.edu/visual-identity/monogram/');
+  }
+
+  .wd-kanbas-navigation {
+    background-color: black;
+    width: 80px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+  }
+  
+  .northeastern-logo {
+    color: red;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 20px;
+    width: 100%;
+    padding: 10px 0;
+  }
+  
+  .nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-item.active {
+    color: red;
+  }
+  
+  .icon-container {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .nav-label {
+    font-size: 12px;
+    text-align: center;
+  }
+  
+
+  .main-content {
+    margin-left: 80px;
+  }
+  
