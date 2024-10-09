@@ -38,7 +38,7 @@ function Courses() {
               <Route path="Home" element={<Home />} />
               <Route path="Modules" element={<Modules />} />
               <Route path="Assignments" element={<Assignments />} />
-              <Route path="Assignments/:assignmentId" element={<Editor />} />
+              <Route path="Assignments/:assignmentId" element={<Editor/>} />
             <Route path="People" element={<PeopleTable />} />
           </Routes>
         </div>
