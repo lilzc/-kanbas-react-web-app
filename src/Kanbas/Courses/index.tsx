@@ -7,7 +7,7 @@ import Modules from "./Modules/index";
 import Home from "./Home/index";
 import Assignments from "./Assignments/index";
 import { FaAlignJustify } from "react-icons/fa";
-import Editor from "./Assignments/AssignmentEditor";
+import Editor from "./Assignments/Editor";
 
 
 
