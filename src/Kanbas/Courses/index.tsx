@@ -7,7 +7,7 @@ import Modules from "./Modules/index";
 import Home from "./Home/index";
 import Assignments from "./Assignments/index";
 import { FaAlignJustify } from "react-icons/fa";
-import Editor from "./Assignments/Editor";
+import AssignmentEditor from "./Assignments/AssignmentEditor";
 
 
 
@@ -38,7 +38,7 @@ function Courses() {
               <Route path="Home" element={<Home />} />
               <Route path="Modules" element={<Modules />} />
               <Route path="Assignments" element={<Assignments />} />
-              <Route path="Assignments/:assignmentId" element={<Editor/>} />
+              <Route path="Assignments/:assignmentId" element={<AssignmentEditor/>} />
             <Route path="People" element={<PeopleTable />} />
           </Routes>
         </div>
