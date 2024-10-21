@@ -11,7 +11,6 @@ import AssignmentEditor from "./Assignments/AssignmentEditor";
 
 function Courses() {
   const { courseId } = useParams<{ courseId: string }>();
-  const { pathname } = useLocation();
   
   const course = courses.find((course) => course._id === courseId);
 
