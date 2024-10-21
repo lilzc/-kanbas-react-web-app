@@ -1,28 +1,36 @@
 import React from 'react';
 
 const BootstrapNavigation: React.FC = () => {
+  const handleTabClick = (event: React.MouseEvent) => {
+    event.preventDefault();
+    console.log("Tab clicked");
+  };
+
+  const handleCardButtonClick = (event: React.MouseEvent) => {
+    event.preventDefault();
+    console.log("Card button clicked");
+  };
+
   return (
     <div>
-      {/* Navigating with Tabs */}
       <div id="wd-css-navigating-with-tabs">
         <h2>Tabs</h2>
         <ul className="nav nav-tabs">
           <li className="nav-item">
-            <a className="nav-link active" href="#">Active</a>
+            <button className="nav-link active" onClick={handleTabClick}>Active</button>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">Link</a>
+            <button className="nav-link" onClick={handleTabClick}>Link</button>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">Link</a>
+            <button className="nav-link" onClick={handleTabClick}>Link</button>
           </li>
           <li className="nav-item">
-            <a className="nav-link disabled" href="#">Disabled</a>
+            <button className="nav-link disabled" disabled>Disabled</button>
           </li>
         </ul>
       </div>
 
-      {/* Navigating with Cards */}
       <div id="wd-css-navigating-with-cards">
         <h2>Cards</h2>
         <div className="card" style={{ width: "18rem" }}>
@@ -32,7 +40,7 @@ const BootstrapNavigation: React.FC = () => {
             <p className="card-text">
               Stacking the most powerful rocket in history. Mars or bust!
             </p>
-            <a href="#" className="btn btn-primary">Boldly Go</a>
+            <button className="btn btn-primary" onClick={handleCardButtonClick}>Boldly Go</button>
           </div>
         </div>
       </div>

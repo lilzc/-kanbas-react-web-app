@@ -8,6 +8,22 @@ interface ModulesControlsProps {
 }
 
 export default function ModulesControls({ onCollapseAll, onExpandAll }: ModulesControlsProps) {
+  const handlePublishAll = () => {
+    console.log("Publish all modules and items");
+  };
+
+  const handlePublishModules = () => {
+    console.log("Publish modules only");
+  };
+
+  const handleUnpublishAll = () => {
+    console.log("Unpublish all modules and items");
+  };
+
+  const handleUnpublishModules = () => {
+    console.log("Unpublish modules only");
+  };
+
   return (
     <div id="wd-modules-controls" className="d-flex flex-wrap justify-content-between align-items-center mb-3">
       <div className="d-flex flex-wrap">
@@ -22,26 +38,26 @@ export default function ModulesControls({ onCollapseAll, onExpandAll }: ModulesC
           </button>
           <ul className="dropdown-menu">
             <li>
-              <a id="wd-publish-all-modules-and-items-btn" className="dropdown-item" href="#">
+              <button id="wd-publish-all-modules-and-items-btn" className="dropdown-item" onClick={handlePublishAll}>
                 <GreenCheckmark />
                 Publish all modules and items
-              </a>
+              </button>
             </li>
             <li>
-              <a id="wd-publish-modules-only-button" className="dropdown-item" href="#">
+              <button id="wd-publish-modules-only-button" className="dropdown-item" onClick={handlePublishModules}>
                 <GreenCheckmark />
                 Publish modules only
-              </a>
+              </button>
             </li>
             <li>
-              <a id="wd-unpublish-all-modules-and-items" className="dropdown-item" href="#">
+              <button id="wd-unpublish-all-modules-and-items" className="dropdown-item" onClick={handleUnpublishAll}>
                 Unpublish all modules and items
-              </a>
+              </button>
             </li>
             <li>
-              <a id="wd-unpublish-modules-only" className="dropdown-item" href="#">
+              <button id="wd-unpublish-modules-only" className="dropdown-item" onClick={handleUnpublishModules}>
                 Unpublish modules only
-              </a>
+              </button>
             </li>
           </ul>
         </div>

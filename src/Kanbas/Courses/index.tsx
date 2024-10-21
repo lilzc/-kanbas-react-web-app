@@ -15,10 +15,7 @@ function Courses() {
   
   const course = courses.find((course) => course._id === courseId);
 
-  const currentSection = pathname.split("/").pop();
-
   if (!courseId) {
-    // Render course list if no courseId is provided
     return (
       <div>
         <h1>Course List</h1>
@@ -33,7 +30,6 @@ function Courses() {
     );
   }
 
-  // Render individual course view
   return (
     <div>
       <h2 className="mb-4">
