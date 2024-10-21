@@ -1,26 +1,38 @@
 import React from "react";
 import { FaUserCircle } from "react-icons/fa";
+import { useParams } from "react-router-dom";
+import * as db from "../../Database";
 
 interface User {
+  _id: string;
+  username: string;
+  password: string;
   firstName: string;
   lastName: string;
+  email: string;
+  dob: string;
+  role: string;
   loginId: string;
   section: string;
-  role: string;
   lastActivity: string;
   totalActivity: string;
 }
 
-const users: User[] = [
-  { firstName: "Tony", lastName: "Stark", loginId: "001234561S", section: "S101", role: "STUDENT", lastActivity: "2020-10-01T00:00:00.000Z", totalActivity: "10:21:32" },
-  { firstName: "Bruce", lastName: "Wayne", loginId: "001234562S", section: "S101", role: "STUDENT", lastActivity: "2020-11-02T00:00:00.000Z", totalActivity: "15:32:43" },
-  { firstName: "Steve", lastName: "Rogers", loginId: "001234563S", section: "S101", role: "STUDENT", lastActivity: "2020-10-02T00:00:00.000Z", totalActivity: "23:32:43" },
-  { firstName: "Natasha", lastName: "Romanoff", loginId: "001234564S", section: "S101", role: "TA", lastActivity: "2020-11-05T00:00:00.000Z", totalActivity: "13:23:34" },
-  { firstName: "Thor", lastName: "Odinson", loginId: "001234565S", section: "S101", role: "STUDENT", lastActivity: "2020-12-01T00:00:00.000Z", totalActivity: "11:22:33" },
-  { firstName: "Bruce", lastName: "Banner", loginId: "001234566S", section: "S101", role: "STUDENT", lastActivity: "2020-12-01T00:00:00.000Z", totalActivity: "22:33:44" },
-];
+interface Enrollment {
+  _id: string;
+  user: string;
+  course: string;
+}
 
 export default function PeopleTable() {
+  const { courseId } = useParams<{ courseId: string }>();
+  const users: User[] = db.users;
+  const enrollments: Enrollment[] = db.enrollments;
+
+  const enrolledUsers = users.filter((user) =>
+    enrollments.some((enrollment) => enrollment.user === user._id && enrollment.course === courseId)
+  );
+
   return (
     <div id="wd-people-table">
       <table className="table table-striped">
@@ -28,24 +40,22 @@ export default function PeopleTable() {
           <tr>
             <th>Name</th>
             <th>Login ID</th>
-            <th>Section</th>
             <th>Role</th>
             <th>Last Activity</th>
             <th>Total Activity</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
-            <tr key={index}>
+          {enrolledUsers.map((user) => (
+            <tr key={user._id}>
               <td className="wd-full-name text-nowrap">
                 <FaUserCircle className="me-2 fs-1 text-secondary" />
                 <span className="wd-first-name">{user.firstName}</span>{" "}
                 <span className="wd-last-name">{user.lastName}</span>
               </td>
               <td className="wd-login-id">{user.loginId}</td>
-              <td className="wd-section">{user.section}</td>
               <td className="wd-role">{user.role}</td>
-              <td className="wd-last-activity">{new Date(user.lastActivity).toLocaleDateString()}</td>
+              <td className="wd-last-activity">{user.lastActivity}</td>
               <td className="wd-total-activity">{user.totalActivity}</td>
             </tr>
           ))}

@@ -1,32 +1,50 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./KanbasNavigation.css";
-import { FaUser, FaTachometerAlt, FaBook, FaCalendarAlt, FaInbox, FaCog } from "react-icons/fa";
+import {
+  AiOutlineDashboard
+} from "react-icons/ai";
+import {
+  IoCalendarOutline
+} from "react-icons/io5";
+import {
+  LiaBookSolid,
+  LiaCogSolid
+} from "react-icons/lia";
+import {
+  FaInbox,
+  FaRegCircleUser
+} from "react-icons/fa6";
 
 export default function KanbasNavigation() {
   const { pathname } = useLocation();
   const links = [
-    { label: "Account", icon: <FaUser />, path: "/Kanbas/Account" },
-    { label: "Dashboard", icon: <FaTachometerAlt />, path: "/Kanbas/Dashboard" },
-    { label: "Courses", icon: <FaBook />, path: "/Kanbas/Courses" },
-    { label: "Calendar", icon: <FaCalendarAlt />, path: "/Kanbas/Calendar" },
-    { label: "Inbox", icon: <FaInbox />, path: "/Kanbas/Inbox" },
-    { label: "Labs", icon: <FaCog />, path: "/Kanbas/Labs" }
+    { label: "Account", path: "/Kanbas/Account", icon: FaRegCircleUser },
+    { label: "Dashboard", path: "/Kanbas/Dashboard", icon: AiOutlineDashboard },
+    { label: "Courses", path: "/Kanbas/Courses", icon: LiaBookSolid },
+    { label: "Calendar", path: "/Kanbas/Calendar", icon: IoCalendarOutline },
+    { label: "Inbox", path: "/Kanbas/Inbox", icon: FaInbox },
+    { label: "Labs", path: "/Labs", icon: LiaCogSolid },
   ];
-  
+
   return (
-    <nav className="wd-kanbas-navigation">
-      <div className="northeastern-logo">N</div>
-      {links.map((link, index) => (
+    <div id="wd-kanbas-navigation"
+         className="position-fixed bottom-0 top-0 d-none d-md-flex flex-column bg-black z-2">
+      <Link to="/Kanbas/Dashboard" className="nav-logo-link">
+        <img src="/images/N.png" alt="Northeastern Logo" className="nav-logo" />
+      </Link>
+      
+      {links.map((link) => (
         <Link
-          key={index}
+          key={link.path}
           to={link.path}
-          className={`nav-item ${pathname.includes(link.path) ? "active" : ""}`}
-        >
-          <div className="icon-container">{link.icon}</div>
-          <span className="nav-label">{link.label}</span>
+          className={`nav-link bg-black text-center ${pathname.includes(link.path) ? "active" : ""}`}>
+          {React.createElement(link.icon, { 
+            className: `nav-icon ${pathname.includes(link.path) ? "active" : ""}`
+          })}
+          <span className="nav-label d-none d-xl-block">{link.label}</span>
         </Link>
       ))}
-    </nav>
+    </div>
   );
 }

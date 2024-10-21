@@ -1,55 +1,95 @@
-.wd-assignment-list {
-    border: none;
-  }
-  
-  .wd-assignment-item {
-    border-left: 5px solid green !important;
-    margin-bottom: 10px;
-    padding: 10px 15px;
-  }
-  
-  .wd-assignment-title {
-    font-weight: bold;
-    color: black;
-    text-decoration: none;
-  }
-  
-  .wd-assignment-title:hover {
-    color: #0056b3;
-  }
-  
-  .wd-assign-to-box {
-    background-color: #f8f9fa;
-  }
-  
+.assignments-container {
+  padding: 20px;
+}
 
-  .wd-assignment-editor .form-label {
-    font-weight: bold;
-  }
-  
-  .wd-assignment-editor .form-control,
-  .wd-assignment-editor .form-select {
-    max-width: 300px;
-  }
-  
-  .wd-assignment-editor textarea.form-control {
-    max-width: 100%;
-  }
-  
-  .wd-assignment-editor .online-entry-options {
-    margin-left: 20px;
-  }
-  
-  .wd-assignment-editor .assign-to-box {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 5px;
-  }
+.assignments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-  .list-group-item:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .list-group-item .text-dark:hover {
-    text-decoration: underline !important;
-  }
+.assignments-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.assignments-list {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.assignments-list-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.assignment-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.assignment-icon {
+  margin-right: 10px;
+}
+
+.assignment-details {
+  flex-grow: 1;
+}
+
+.assignment-title {
+  font-weight: bold;
+  color: #2d3b45;
+  text-decoration: none;
+}
+
+.assignment-info {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+.assignment-info span {
+  margin-right: 5px;
+}
+
+.assignment-published {
+  color: green;
+  margin-right: 10px;
+}
+
+.assignment-actions {
+  cursor: pointer;
+}
+
+.assignment-percentage {
+  margin-left: auto;
+  margin-right: 10px;
+}

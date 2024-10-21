@@ -1,49 +1,60 @@
-
-import PeopleTable from "./People/Table";
 import React from "react";
-import { Routes, Route, useParams, useLocation } from "react-router-dom";
+import { Routes, Route, useParams, useLocation, Link } from "react-router-dom";
 import CourseNavigation from "./Navigation";
-import Modules from "./Modules/index";
-import Home from "./Home/index";
-import Assignments from "./Assignments/index";
+import Modules from "./Modules";
+import Home from "./Home";
+import Assignments from "./Assignments";
 import { FaAlignJustify } from "react-icons/fa";
+import PeopleTable from "./People/Table";  
+import { courses } from "../Database"; 
 import AssignmentEditor from "./Assignments/AssignmentEditor";
 
-
-
-
 function Courses() {
-  const { courseId } = useParams();
+  const { courseId } = useParams<{ courseId: string }>();
   const { pathname } = useLocation();
+  
+  const course = courses.find((course) => course._id === courseId);
 
-  React.useEffect(() => {
-    console.log("Current path:", pathname);
-  }, [pathname]);
+  const currentSection = pathname.split("/").pop();
 
-  return (
-    <div className="d-flex">
-      <div className="d-none d-md-block">
-        <CourseNavigation />
+  if (!courseId) {
+    // Render course list if no courseId is provided
+    return (
+      <div>
+        <h1>Course List</h1>
+        <ul>
+          {courses.map(course => (
+            <li key={course._id}>
+              <Link to={`/Kanbas/Courses/${course._id}`}>{course.name}</Link>
+            </li>
+          ))}
+        </ul>
       </div>
-      <div className="flex-grow-1 p-4">
-        <h2 className="mb-4">
-          <FaAlignJustify className="me-2" />
-          Course {courseId}
-        </h2>
-        <hr />
-        <div className="d-flex">
-          <div className="flex-grow-1">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="Home" element={<Home />} />
-              <Route path="Modules" element={<Modules />} />
-              <Route path="Assignments" element={<Assignments />} />
-              <Route path="Assignments/:assignmentId" element={<AssignmentEditor/>} />
+    );
+  }
+
+  // Render individual course view
+  return (
+    <div>
+      <h2 className="mb-4">
+        <FaAlignJustify className="me-2" />
+        {course ? course.name : `Course ${courseId}`}
+      </h2>
+      <div className="d-flex">
+        <div className="d-none d-md-block">
+          <CourseNavigation />
+        </div>
+        <div className="flex-grow-1 p-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="Home" element={<Home />} />
+            <Route path="Modules" element={<Modules />} />
+            <Route path="Assignments" element={<Assignments />} />
+            <Route path="Assignments/:assignmentId" element={<AssignmentEditor />} />
             <Route path="People" element={<PeopleTable />} />
           </Routes>
         </div>
       </div>
-    </div>
     </div>
   );
 }

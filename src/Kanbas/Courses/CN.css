@@ -21,3 +21,7 @@
     border-left: 2px solid black;
     background-color: white;
   }
+  .flex-grow-1 {
+    border: 1px solid red; /* Temporary border */
+  }
+  

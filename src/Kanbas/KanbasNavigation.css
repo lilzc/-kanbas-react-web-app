@@ -1,37 +1,68 @@
-.wd-kanbas-navigation {
-  background-color: black;
-  padding-top: 10px;
-}
 
-.wd-kanbas-navigation .list-group-item {
-  background-color: black;
+#wd-kanbas-navigation .list-group-item {
+  padding: 15px 10px;
   border: none;
+  width: 100%;
+}
+
+#wd-kanbas-navigation .fs-1 {
+  font-size: 1.8rem !important; 
+}
+
+#wd-neu-link {
+  padding: 15px 0;
+  margin-bottom: 15px;
+}
+
+#wd-neu-link img {
+  width: 80px; 
+  height: auto;
+}
+
+.nav-logo-link {
+  margin-bottom: 25px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.main-content {
+  margin-left: 120px; 
+  padding: 20px;
+  width: calc(100% - 120px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  #wd-kanbas-navigation {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px 0;
+  }
+
+  #wd-kanbas-navigation a {
+    padding: 10px 5px;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+#wd-kanbas-navigation {
+  width: 120px;
+  background-color: #2C3E50;
   color: white;
-  text-align: center;
-  padding: 10px 0;
-}
-
-.wd-kanbas-navigation .list-group-item.active {
-  background-color: white;
-  color: red;
-}
-
-.wd-kanbas-navigation .wd-icon {
-  font-size: 2em;
-  margin-bottom: 5px;
-}
-
-.wd-kanbas-navigation .wd-nav-label {
-  font-size: 0.8em;
-}
-
-.wd-kanbas-navigation .list-group-item:hover:not(.active) {
-  background-color: #333;
-}
-
-.wd-kanbas-navigation {
-  background-color: black;
-  width: 80px;
   height: 100vh;
   position: fixed;
   top: 0;
@@ -40,44 +71,19 @@
   flex-direction: column;
   align-items: center;
   padding-top: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.northeastern-logo {
-  color: red;
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 20px;
+body {
+  margin: 0;
+  padding: 0;
 }
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: white;
-  text-decoration: none;
-  margin-bottom: 20px;
-  width: 100%;
-  padding: 10px 0;
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-item.active {
+.nav-link.active {
+  background-color: white;
   color: red;
 }
 
-.icon-container {
-  font-size: 24px;
-  margin-bottom: 5px;
-}
 
-.nav-label {
-  font-size: 12px;
-  text-align: center;
-}
-
-.main-content {
-  margin-left: 80px;
+.nav-icon.active {
+  color: red;
 }

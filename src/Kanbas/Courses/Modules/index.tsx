@@ -1,44 +1,19 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import ModulesControls from "./ModulesControls";
 import ModuleControlButtons from "./ModuleControlButtons";
 import LessonControlButtons from "./LessonControlButtons";
 import { BsGripVertical } from "react-icons/bs";
+import * as db from '../../Database'; 
 
 export default function Modules() {
-  const [modules, setModules] = useState([
-    { 
-      title: 'Week 1: Introduction to the course', 
-      progress: 100, 
-      expanded: true,
-      lessons: [
-        "LEARNING OBJECTIVES",
-        "Introduction to the course",
-        "Learn what is Web Development",
-        "LESSON 1",
-        "LESSON 2"
-      ]
-    },
-    { 
-      title: 'Week 2: Learning Objectives', 
-      progress: 50, 
-      expanded: false,
-      lessons: [
-        "LEARNING OBJECTIVES",
-        "LESSON 1",
-        "LESSON 2"
-      ]
-    },
-    { 
-      title: 'Week 3: Web Development Basics', 
-      progress: 0, 
-      expanded: false,
-      lessons: [
-        "LEARNING OBJECTIVES",
-        "LESSON 1",
-        "LESSON 2"
-      ]
-    },
-  ]);
+  const { cid } = useParams();  
+  const initialModules = db.modules.filter((module) => module.course === cid); 
+
+
+  const [modules, setModules] = useState(
+    initialModules.map((mod) => ({ ...mod, expanded: false })) 
+  );
 
   const toggleModule = (index: number) => {
     setModules(
@@ -66,38 +41,24 @@ export default function Modules() {
               <div>
                 <BsGripVertical className="me-2 fs-3" />
                 <span onClick={() => toggleModule(index)} style={{ cursor: 'pointer' }}>
-                  {module.title} {module.expanded ? '▲' : '▼'}
+                  {module.name} {module.expanded ? '▲' : '▼'}
                 </span>
               </div>
               <ModuleControlButtons />
             </div>
             {module.expanded && (
               <>
-                <div className="p-3">
-                  <div className="progress">
-                    <div 
-                      className="progress-bar" 
-                      role="progressbar" 
-                      style={{
-                        width: `${module.progress}%`,
-                        backgroundColor: module.progress === 100 ? 'green' : 'blue'
-                      }} 
-                      aria-valuenow={module.progress} 
-                      aria-valuemin={0} 
-                      aria-valuemax={100}
-                    ></div>
-                  </div>
-                  <p className="mt-2">{module.progress}% complete</p>
-                </div>
-                <ul className="wd-lessons list-group rounded-0">
-                  {module.lessons.map((lesson, lessonIndex) => (
-                    <li key={lessonIndex} className="wd-lesson list-group-item p-3 ps-1">
-                      <BsGripVertical className="me-2 fs-3" />
-                      {lesson}
-                      <LessonControlButtons />
-                    </li>
-                  ))}
-                </ul>
+                {module.lessons && (
+                  <ul className="wd-lessons list-group rounded-0">
+                    {module.lessons.map((lesson, lessonIndex) => (
+                      <li key={lessonIndex} className="wd-lesson list-group-item p-3 ps-1">
+                        <BsGripVertical className="me-2 fs-3" />
+                        {lesson.name}
+                        <LessonControlButtons />
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </>
             )}
           </li>

@@ -1,198 +1,148 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-import './Assignments.css';
+import { assignments } from '../../Database';
+import './AssignmentEditor.css'; 
+
+interface Assignment {
+  _id: string;
+  title: string;
+  description: string;
+  points: number;
+  dueDate: string;
+  availableFrom: string;
+  availableUntil: string;
+  assignTo: string;
+}
 
 export default function AssignmentEditor() {
-  const { courseId } = useParams<{ courseId: string }>();
+  const { courseId, assignmentId } = useParams<{ courseId: string; assignmentId: string }>();
   const navigate = useNavigate();
-  const [assignment, setAssignment] = useState({
-    name: "A1",
-    description: "The assignment is available online\nSubmit a link to the landing page of your Web application running on Netlify.\n\nThe landing page should include the following:\n• Your full name and section\n• Links to each of the lab assignments\n• Link to the Kanbas application\n• Links to all relevant source code repositories\n\nThe Kanbas application should include a link to navigate back to the landing page.",
-    points: 100,
-    assignmentGroup: "ASSIGNMENTS",
-    displayGrade: "Percentage",
-    submissionType: "Online",
-    onlineEntryOptions: {
-      textEntry: false,
-      websiteUrl: true,
-      mediaRecordings: false,
-      studentAnnotation: false,
-      fileUploads: false
-    },
-    assignTo: "Everyone",
-    dueDate: "2024-05-13T23:59",
-    availableFrom: "2024-05-06T00:00",
-    availableUntil: ""
+  const [assignment, setAssignment] = useState<Assignment>({
+    _id: '',
+    title: '',
+    description: '',
+    points: 0,
+    dueDate: '',
+    availableFrom: '',
+    availableUntil: '',
+    assignTo: ''
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    const assignmentToEdit = assignments.find(a => a._id === assignmentId && a.course === courseId);
+    if (assignmentToEdit) {
+      setAssignment(assignmentToEdit as Assignment);
+    }
+  }, [assignmentId, courseId]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setAssignment(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setAssignment(prev => ({
-      ...prev,
-      onlineEntryOptions: { ...prev.onlineEntryOptions, [name]: checked }
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Assignment saved:", assignment);
+    console.log("Saving assignment:", assignment);
+    // Here you would typically update the assignment in your database
     navigate(`/Kanbas/Courses/${courseId}/Assignments`);
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Assignment Name</h2>
+    <div className="assignment-editor">
+      <h2>Assignment Editor</h2>
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <input 
+        <div className="form-group">
+          <label htmlFor="title">Assignment Name</label>
+          <input
             type="text"
-            className="form-control"
-            name="name"
-            value={assignment.name}
+            id="title"
+            name="title"
+            value={assignment.title}
             onChange={handleInputChange}
+            className="form-control"
           />
         </div>
 
-        <div className="mb-3">
-          <textarea 
-            className="form-control"
+        <div className="form-group">
+          <p>The assignment is available online</p>
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
             name="description"
-            rows={5}
             value={assignment.description}
             onChange={handleInputChange}
-          ></textarea>
+            className="form-control"
+            rows={6}
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Points</label>
-          <div className="col-sm-9">
-            <input 
-              type="number"
-              className="form-control"
-              name="points"
-              value={assignment.points}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="points">Points</label>
+          <input
+            type="number"
+            id="points"
+            name="points"
+            value={assignment.points}
+            onChange={handleInputChange}
+            className="form-control"
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Assignment Group</label>
-          <div className="col-sm-9">
-            <select 
-              className="form-control"
-              name="assignmentGroup"
-              value={assignment.assignmentGroup}
-              onChange={handleInputChange}
-            >
-              <option>ASSIGNMENTS</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="assignTo">Assign</label>
+          <input
+            type="text"
+            id="assignTo"
+            name="assignTo"
+            value={assignment.assignTo}
+            onChange={handleInputChange}
+            className="form-control"
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Display Grade as</label>
-          <div className="col-sm-9">
-            <select 
-              className="form-control"
-              name="displayGrade"
-              value={assignment.displayGrade}
-              onChange={handleInputChange}
-            >
-              <option>Percentage</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="dueDate">Due</label>
+          <input
+            type="datetime-local"
+            id="dueDate"
+            name="dueDate"
+            value={assignment.dueDate}
+            onChange={handleInputChange}
+            className="form-control"
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Submission Type</label>
-          <div className="col-sm-9">
-            <select 
-              className="form-control"
-              name="submissionType"
-              value={assignment.submissionType}
-              onChange={handleInputChange}
-            >
-              <option>Online</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="availableFrom">Available from</label>
+          <input
+            type="datetime-local"
+            id="availableFrom"
+            name="availableFrom"
+            value={assignment.availableFrom}
+            onChange={handleInputChange}
+            className="form-control"
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Online Entry Options</label>
-          <div className="col-sm-9">
-            {Object.entries(assignment.onlineEntryOptions).map(([key, value]) => (
-              <div className="form-check" key={key}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id={key}
-                  name={key}
-                  checked={value}
-                  onChange={handleCheckboxChange}
-                />
-                <label className="form-check-label" htmlFor={key}>
-                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                </label>
-              </div>
-            ))}
-          </div>
+        <div className="form-group">
+          <label htmlFor="availableUntil">Until</label>
+          <input
+            type="datetime-local"
+            id="availableUntil"
+            name="availableUntil"
+            value={assignment.availableUntil}
+            onChange={handleInputChange}
+            className="form-control"
+          />
         </div>
 
-        <div className="row mb-3">
-          <label className="col-sm-3 col-form-label">Assign</label>
-          <div className="col-sm-9">
-            <input 
-              type="text"
-              className="form-control"
-              name="assignTo"
-              value={assignment.assignTo}
-              onChange={handleInputChange}
-              readOnly
-            />
-            <div className="mt-2">
-              <label>Due</label>
-              <input 
-                type="datetime-local"
-                className="form-control"
-                name="dueDate"
-                value={assignment.dueDate}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="row mt-2">
-              <div className="col-6">
-                <label>Available from</label>
-                <input 
-                  type="datetime-local"
-                  className="form-control"
-                  name="availableFrom"
-                  value={assignment.availableFrom}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-6">
-                <label>Until</label>
-                <input 
-                  type="datetime-local"
-                  className="form-control"
-                  name="availableUntil"
-                  value={assignment.availableUntil}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="float-end">
-          <button type="button" className="btn btn-secondary me-2" onClick={() => navigate(`/Kanbas/Courses/${courseId}/Assignments`)}>Cancel</button>
-          <button type="submit" className="btn btn-danger">Save</button>
+        <div className="form-group text-right">
+          <button type="button" className="btn btn-secondary mr-2" onClick={() => navigate(`/Kanbas/Courses/${courseId}/Assignments`)}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-danger">
+            Save
+          </button>
         </div>
       </form>
     </div>
