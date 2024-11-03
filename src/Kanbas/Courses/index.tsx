@@ -1,25 +1,69 @@
 import React from "react";
-import { Routes, Route, useParams, Link } from "react-router-dom";
+import { Routes, Route, useParams, Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import CourseNavigation from "./Navigation";
 import Modules from "./Modules";
 import Home from "./Home";
 import Assignments from "./Assignments";
 import { FaAlignJustify } from "react-icons/fa";
-import PeopleTable from "./People/Table";  
-import { courses } from "../Database"; 
+import PeopleTable from "./People/Table";
 import AssignmentEditor from "./Assignments/AssignmentEditor";
+import { RootState } from "../store";
+import * as db from "../Database";
 
-function Courses() {
-  const { courseId } = useParams<{ courseId: string }>();
+interface CoursesProps {
+  courses: any[];
+}
+
+function Courses({ courses }: CoursesProps) {
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+  const { currentUser, enrollments, unenrolledDbCourses } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
   
+  const isStudent = currentUser?.role === "STUDENT";
+
+  const isEnrolled = (courseId: string): boolean => {
+    if (!isStudent) return false;
+    
+    const isInDatabase = db.enrollments.some(
+      enrollment => 
+        enrollment.user === currentUser?._id && 
+        enrollment.course === courseId
+    );
+    
+   
+    if (isInDatabase && !unenrolledDbCourses.includes(courseId)) {
+      return true;
+    }
+    
+
+    return enrollments.some(
+      enrollment => 
+        enrollment.user === currentUser?._id && 
+        enrollment.course === courseId
+    );
+  };
+
+  React.useEffect(() => {
+    if (isStudent && courseId && !isEnrolled(courseId)) {
+      navigate("/Kanbas/Dashboard");
+    }
+  }, [courseId, isStudent]);
+
   const course = courses.find((course) => course._id === courseId);
+
+  const displayedCourses = isStudent
+    ? courses.filter(course => isEnrolled(course._id))
+    : courses;
 
   if (!courseId) {
     return (
       <div>
         <h1>Course List</h1>
         <ul>
-          {courses.map(course => (
+          {displayedCourses.map(course => (
             <li key={course._id}>
               <Link to={`/Kanbas/Courses/${course._id}`}>{course.name}</Link>
             </li>

@@ -1,56 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-import { assignments } from '../../Database';
-import './AssignmentEditor.css'; 
+import { useSelector, useDispatch } from "react-redux";
+import { addAssignment, updateAssignment } from './reducer';
+import type { RootState } from '../../store';
+import type { Assignment } from './reducer';
 
-interface Assignment {
-  _id: string;
-  title: string;
-  description: string;
-  points: number;
-  dueDate: string;
-  availableFrom: string;
-  availableUntil: string;
-  assignTo: string;
+interface User {
+  role: 'FACULTY' | 'STUDENT' | 'ADMIN' | 'TA';
+  [key: string]: any;  
 }
 
 export default function AssignmentEditor() {
   const { courseId, assignmentId } = useParams<{ courseId: string; assignmentId: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+
+  const currentUser = useSelector((state: RootState) => 
+    state.accountReducer.currentUser
+  ) as User | null;
+
+  const assignments = useSelector((state: RootState) => 
+    state.assignmentsReducer?.assignments || []
+  );
+
+  const isNew = assignmentId === 'new';
+
   const [assignment, setAssignment] = useState<Assignment>({
     _id: '',
     title: '',
     description: '',
-    points: 0,
+    points: 100,
     dueDate: '',
     availableFrom: '',
     availableUntil: '',
-    assignTo: ''
+    course: courseId || ''
   });
 
   useEffect(() => {
-    const assignmentToEdit = assignments.find(a => a._id === assignmentId && a.course === courseId);
-    if (assignmentToEdit) {
-      setAssignment(assignmentToEdit as Assignment);
+    // Type guard for currentUser
+    if (!currentUser || currentUser.role !== "FACULTY") {
+      navigate(`/Kanbas/Courses/${courseId}/Assignments`);
+      return;
     }
-  }, [assignmentId, courseId]);
+    
+    if (!isNew && assignmentId && assignments.length > 0) {
+      const existingAssignment = assignments.find(
+        (a) => a._id === assignmentId && a.course === courseId
+      );
+      if (existingAssignment) {
+        setAssignment(existingAssignment);
+      }
+    }
+  }, [assignmentId, courseId, assignments, isNew, currentUser, navigate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+  if (!currentUser || currentUser.role !== "FACULTY") {
+    return null;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isNew) {
+      dispatch(addAssignment({
+        ...assignment,
+        _id: new Date().getTime().toString()
+      }));
+    } else {
+      dispatch(updateAssignment(assignment));
+    }
+    navigate(`/Kanbas/Courses/${courseId}/Assignments`);
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setAssignment(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Saving assignment:", assignment);
-    // Here you would typically update the assignment in your database
-    navigate(`/Kanbas/Courses/${courseId}/Assignments`);
-  };
-
   return (
-    <div className="assignment-editor">
-      <h2>Assignment Editor</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="p-4">
+      <h2>{isNew ? 'Create Assignment' : 'Edit Assignment'}</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="form-group">
           <label htmlFor="title">Assignment Name</label>
           <input
@@ -60,11 +92,11 @@ export default function AssignmentEditor() {
             value={assignment.title}
             onChange={handleInputChange}
             className="form-control"
+            required
           />
         </div>
 
         <div className="form-group">
-          <p>The assignment is available online</p>
           <label htmlFor="description">Description</label>
           <textarea
             id="description"
@@ -85,23 +117,12 @@ export default function AssignmentEditor() {
             value={assignment.points}
             onChange={handleInputChange}
             className="form-control"
+            required
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="assignTo">Assign</label>
-          <input
-            type="text"
-            id="assignTo"
-            name="assignTo"
-            value={assignment.assignTo}
-            onChange={handleInputChange}
-            className="form-control"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="dueDate">Due</label>
+          <label htmlFor="dueDate">Due Date</label>
           <input
             type="datetime-local"
             id="dueDate"
@@ -136,12 +157,16 @@ export default function AssignmentEditor() {
           />
         </div>
 
-        <div className="form-group text-right">
-          <button type="button" className="btn btn-secondary mr-2" onClick={() => navigate(`/Kanbas/Courses/${courseId}/Assignments`)}>
+        <div className="d-flex justify-content-end gap-2 mt-3">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate(`/Kanbas/Courses/${courseId}/Assignments`)}
+          >
             Cancel
           </button>
           <button type="submit" className="btn btn-danger">
-            Save
+            {isNew ? 'Create' : 'Save'}
           </button>
         </div>
       </form>

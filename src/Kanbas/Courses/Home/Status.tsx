@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { MdDoNotDisturbAlt } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { BiImport } from "react-icons/bi";
@@ -10,6 +11,13 @@ import { VscMultipleWindows } from "react-icons/vsc";
 import { IoStatsChartOutline } from "react-icons/io5";
 
 export default function CourseStatus() {
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const isFaculty = currentUser?.role === "FACULTY";
+
+  if (!isFaculty) {
+    return null;
+  }
+
   return (
     <div id="wd-course-status" style={{ width: "300px" }}>
       <h2>Course Status</h2>

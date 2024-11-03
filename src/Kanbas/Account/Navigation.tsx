@@ -1,41 +1,42 @@
-import React from 'react';
-import { Link } from "react-router-dom";
-import { FaCalendar, FaEnvelopeOpenText, FaFlask } from "react-icons/fa";
-import { AiOutlineDashboard } from "react-icons/ai";
-import { FaBookBible } from "react-icons/fa6";
-import { VscAccount } from "react-icons/vsc";
-import "./KN.css";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-export default function KanbasNavigation() {
+interface AccountState {
+  accountReducer: {
+    currentUser: any;
+  }
+}
+
+interface NavLink {
+  to: string;
+  text: string;
+}
+
+export default function AccountNavigation() {
+  const { currentUser } = useSelector((state: AccountState) => state.accountReducer);
+  const { pathname } = useLocation();
+  
+  const links: NavLink[] = currentUser 
+    ? [{ to: "Profile", text: "Profile" }]
+    : [
+        { to: "Signin", text: "Sign In" },
+        { to: "Signup", text: "Sign Up" }
+      ];
+
   return (
-    <div id="wd-kanbas-navigation">
-      <a href="https://www.northeastern.edu/" id="wd-neu-link" target="_blank" rel="noopener noreferrer" className="wd-nav-item">
-        N
-      </a>
-      <Link to="/Kanbas/Account" id="wd-account-link" className="wd-nav-item">
-        <VscAccount className="wd-nav-icon" />
-        <span>Account</span>
-      </Link>
-      <Link to="/Kanbas/Dashboard" id="wd-dashboard-link" className="wd-nav-item">
-        <AiOutlineDashboard className="wd-nav-icon" />
-        <span>Dashboard</span>
-      </Link>
-      <Link to="/Kanbas/Courses" id="wd-course-link" className="wd-nav-item">
-        <FaBookBible className="wd-nav-icon" />
-        <span>Courses</span>
-      </Link>
-      <Link to="/Kanbas/Calendar" id="wd-calendar-link" className="wd-nav-item">
-        <FaCalendar className="wd-nav-icon" />
-        <span>Calendar</span>
-      </Link>
-      <Link to="/Kanbas/Inbox" id="wd-inbox-link" className="wd-nav-item">
-        <FaEnvelopeOpenText className="wd-nav-icon" />
-        <span>Inbox</span>
-      </Link>
-      <Link to="/Kanbas/Labs" id="wd-labs-link" className="wd-nav-item">
-        <FaFlask className="wd-nav-icon" />
-        <span>Labs</span>
-      </Link>
+    <div className="list-group" style={{ width: 150 }}>
+      {links.map((link) => (
+        <Link
+          key={link.to}
+          to={`/Kanbas/Account/${link.to}`}
+          className={`list-group-item ${
+            pathname.includes(link.to) ? "active" : ""
+          }`}
+        >
+          {link.text}
+        </Link>
+      ))}
     </div>
   );
 }

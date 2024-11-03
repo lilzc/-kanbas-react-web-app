@@ -31,28 +31,31 @@ import Add from "./Add";
 import Square from "./Square";
 import Highlight from "./Highlight";
 import PathParameters from "./PathParameters";
+import { useSelector } from "react-redux";
 
 export default function Lab3() {
+  const todos = useSelector((state: any) => state.todosReducer.todos);
   console.log('Hello World!');
-  return(
+
+  return (
     <div id="wd-lab3">
       <h3>Lab 3</h3>
-      <VariablesAndConstants/>
-      <BooleanVariables/>
-      <IfElse/>
-      <VariableTypes/>
-      <TernaryOperator/>
-      <ConditionalOutputIfElse/>
-      <ConditionalOutputInline/>
-      <LegacyFunctions/>
-      <ArrowFunctions/>
-      <ImpliedReturn/>
-      <TemplateLiterals/>
-      <SimpleArrays/>
-      <ArrayIndexAndLength/>
-      <AddingAndRemovingDataToFromArrays/>
-      <ForLoops/>
-      <MapFunction/>
+      <VariablesAndConstants />
+      <BooleanVariables />
+      <IfElse />
+      <VariableTypes />
+      <TernaryOperator />
+      <ConditionalOutputIfElse />
+      <ConditionalOutputInline />
+      <LegacyFunctions />
+      <ArrowFunctions />
+      <ImpliedReturn />
+      <TemplateLiterals />
+      <SimpleArrays />
+      <ArrayIndexAndLength />
+      <AddingAndRemovingDataToFromArrays />
+      <ForLoops />
+      <MapFunction />
       <FindFunction />
       <FindIndex />
       <FilterFunction />
@@ -73,6 +76,15 @@ export default function Lab3() {
         vel nihil repellat nemo explicabo excepturi consectetur. Modi omnis minus sequi maiores, provident voluptates.
       </Highlight>
       <PathParameters />
+      
+      <h4>Todos</h4>
+      <ul className="list-group">
+        {todos.map((todo: { id: string; title: string }) => (
+          <li key={todo.id} className="list-group-item">
+            {todo.title}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
