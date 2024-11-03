@@ -1,9 +1,7 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./reducer";
-
 
 interface DatabaseUser {
   _id: string;
@@ -64,18 +62,17 @@ export default function Profile() {
   
   const [profile, setProfile] = useState<DatabaseUser | null>(null);
 
-  const fetchProfile = () => {
+  const fetchProfile = useCallback(() => {
     if (!currentUser) {
       navigate("/Kanbas/Account/Signin");
       return;
     }
     
-    // Find user in database by ID
     const databaseUser = DATABASE_USERS.find(user => user._id === currentUser._id);
     if (databaseUser) {
       setProfile(databaseUser);
     }
-  };
+  }, [currentUser, navigate]);
 
   const signout = () => {
     dispatch(setCurrentUser(null));
@@ -84,64 +81,77 @@ export default function Profile() {
 
   useEffect(() => {
     fetchProfile();
-  }, [currentUser]);
+  }, [fetchProfile]);
 
   if (!profile) {
     return null;
   }
+
+  const handleInputChange = (
+    field: keyof DatabaseUser,
+    value: string,
+    type: 'text' | 'role' = 'text'
+  ) => {
+    if (!profile) return;
+    
+    if (type === 'role') {
+      setProfile({
+        ...profile,
+        [field]: value as DatabaseUser['role']
+      });
+    } else {
+      setProfile({
+        ...profile,
+        [field]: value
+      });
+    }
+  };
 
   return (
     <div className="wd-profile-screen">
       <h3>Profile</h3>
       <div>
         <input
-          defaultValue={profile.username}
+          value={profile.username}
           id="wd-username"
           className="form-control mb-2"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, username: e.target.value } : null)}
+          onChange={(e) => handleInputChange('username', e.target.value)}
         />
         <input
-          defaultValue={profile.password}
+          value={profile.password}
           id="wd-password"
           className="form-control mb-2"
           type="password"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, password: e.target.value } : null)}
+          onChange={(e) => handleInputChange('password', e.target.value)}
         />
         <input
-          defaultValue={profile.firstName}
+          value={profile.firstName}
           id="wd-firstname"
           className="form-control mb-2"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, firstName: e.target.value } : null)}
+          onChange={(e) => handleInputChange('firstName', e.target.value)}
         />
         <input
-          defaultValue={profile.lastName}
+          value={profile.lastName}
           id="wd-lastname"
           className="form-control mb-2"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, lastName: e.target.value } : null)}
+          onChange={(e) => handleInputChange('lastName', e.target.value)}
         />
         <input
-          defaultValue={profile.dob}
+          value={profile.dob}
           id="wd-dob"
           className="form-control mb-2"
           type="date"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, dob: e.target.value } : null)}
+          onChange={(e) => handleInputChange('dob', e.target.value)}
         />
         <input
-          defaultValue={profile.email}
+          value={profile.email}
           id="wd-email"
           className="form-control mb-2"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setProfile(profile ? { ...profile, email: e.target.value } : null)}
+          onChange={(e) => handleInputChange('email', e.target.value)}
         />
         <select
           value={profile.role}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
-            setProfile(profile ? { ...profile, role: e.target.value as DatabaseUser["role"] } : null)}
+          onChange={(e) => handleInputChange('role', e.target.value, 'role')}
           className="form-control mb-2"
           id="wd-role"
         >
@@ -151,6 +161,7 @@ export default function Profile() {
           <option value="STUDENT">Student</option>
           <option value="TA">TA</option>
         </select>
+        
         <div className="form-group mb-2">
           <label>Login ID: {profile.loginId}</label>
         </div>

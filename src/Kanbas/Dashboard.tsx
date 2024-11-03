@@ -15,11 +15,6 @@ interface DashboardProps {
   updateCourse: () => void;
 }
 
-interface Enrollment {
-  user: string;
-  course: string;
-}
-
 export default function Dashboard({
   courses,
   course,

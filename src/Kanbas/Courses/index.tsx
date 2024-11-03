@@ -47,10 +47,15 @@ function Courses({ courses }: CoursesProps) {
   };
 
   React.useEffect(() => {
-    if (isStudent && courseId && !isEnrolled(courseId)) {
-      navigate("/Kanbas/Dashboard");
+    if (isStudent && courseId) {
+      const checkAccess = async () => {
+        if (!isEnrolled(courseId)) {
+          navigate("/Kanbas/Dashboard");
+        }
+      };
+      checkAccess();
     }
-  }, [courseId, isStudent]);
+  }, [courseId, isStudent, isEnrolled, navigate]);
 
   const course = courses.find((course) => course._id === courseId);
 
