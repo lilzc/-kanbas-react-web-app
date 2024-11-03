@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Routes, Route, useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CourseNavigation from "./Navigation";
@@ -24,7 +24,7 @@ function Courses({ courses }: CoursesProps) {
   
   const isStudent = currentUser?.role === "STUDENT";
 
-  const isEnrolled = (courseId: string): boolean => {
+  const isEnrolled = useCallback((courseId: string): boolean => {
     if (!isStudent) return false;
     
     const isInDatabase = db.enrollments.some(
@@ -33,18 +33,16 @@ function Courses({ courses }: CoursesProps) {
         enrollment.course === courseId
     );
     
-   
     if (isInDatabase && !unenrolledDbCourses.includes(courseId)) {
       return true;
     }
     
-
     return enrollments.some(
       enrollment => 
         enrollment.user === currentUser?._id && 
         enrollment.course === courseId
     );
-  };
+  }, [currentUser?._id, isStudent, enrollments, unenrolledDbCourses]);
 
   React.useEffect(() => {
     if (isStudent && courseId) {
