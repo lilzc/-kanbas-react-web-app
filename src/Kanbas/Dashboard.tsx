@@ -85,38 +85,36 @@ export default function Dashboard({
 
   const handleAddCourse = async () => {
     if (!currentUser?._id) return;
-
+  
     try {
       setIsSubmitting(true);
       setError(null);
-
-      // Validate required fields
+  
       if (!course.name || !course.number) {
         throw new Error("Course name and number are required.");
       }
-
-      // Directly call addNewCourse without creating newCourse object
+  
       await addNewCourse();
-
-      
-      // Create faculty enrollment for the new course
+  
+     
       const createdCourse = await courseClient.fetchAllCourses();
       const latestCourse = createdCourse[createdCourse.length - 1];
-      
+  
       if (latestCourse) {
         await enrollmentClient.enrollInCourse(currentUser._id, latestCourse._id);
-        setFacultyCourses(prev => [...prev, latestCourse._id]);
+        setFacultyCourses((prev) => [...prev, latestCourse._id]);
       }
-
+  
       await fetchData();
       resetCourseForm();
-      
     } catch (error: any) {
       setError(error.message || "Failed to add course. Please try again.");
-    } finally {fetchData
+    } finally {
+      fetchData(); 
       setIsSubmitting(false);
     }
   };
+
 
   useEffect(() => {
     fetchData();
