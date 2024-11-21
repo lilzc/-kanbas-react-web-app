@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Float = () => {
   return (
     <div id="wd-float-divs">

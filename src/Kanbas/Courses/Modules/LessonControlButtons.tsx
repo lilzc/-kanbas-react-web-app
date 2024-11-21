@@ -1,4 +1,3 @@
-import React from "react";
 import { BsGripVertical } from "react-icons/bs";
 import { useSelector } from "react-redux";
 

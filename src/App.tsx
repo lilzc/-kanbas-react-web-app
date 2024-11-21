@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route, Navigate, HashRouter } from "react-router-dom";
 import { Provider } from 'react-redux';
 import store from './Kanbas/store';

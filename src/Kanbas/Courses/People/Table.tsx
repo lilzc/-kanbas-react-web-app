@@ -1,7 +1,7 @@
-import React from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useParams } from "react-router-dom";
-import * as db from "../../Database";
+import { useEffect, useState } from "react";
+import * as client from "./client";
 
 interface User {
   _id: string;
@@ -18,20 +18,30 @@ interface User {
   totalActivity: string;
 }
 
-interface Enrollment {
-  _id: string;
-  user: string;
-  course: string;
-}
-
 export default function PeopleTable() {
   const { courseId } = useParams<{ courseId: string }>();
-  const users: User[] = db.users;
-  const enrollments: Enrollment[] = db.enrollments;
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const enrolledUsers = users.filter((user) =>
-    enrollments.some((enrollment) => enrollment.user === user._id && enrollment.course === courseId)
-  );
+  const fetchUsers = async () => {
+    try {
+      const fetchedUsers = await client.findUsersForCourse(courseId!);
+      setUsers(fetchedUsers);
+    } catch (err) {
+      setError("Failed to fetch users");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [courseId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div id="wd-people-table">
@@ -46,7 +56,7 @@ export default function PeopleTable() {
           </tr>
         </thead>
         <tbody>
-          {enrolledUsers.map((user) => (
+          {users.map((user) => (
             <tr key={user._id}>
               <td className="wd-full-name text-nowrap">
                 <FaUserCircle className="me-2 fs-1 text-secondary" />

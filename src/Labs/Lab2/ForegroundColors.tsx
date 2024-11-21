@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ForegroundColors = () => {
   return (
     <div id="wd-css-colors">

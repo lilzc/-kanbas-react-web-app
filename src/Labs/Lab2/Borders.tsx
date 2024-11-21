@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Borders = () => {
   return (
     <div id="wd-css-borders">

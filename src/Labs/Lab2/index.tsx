@@ -1,4 +1,3 @@
-import React from 'react';
 import "./index.css";
 import BootstrapForms from './BootstrapForms';
 import BootstrapGrids from './BootstrapGrids';

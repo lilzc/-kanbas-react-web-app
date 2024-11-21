@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Margins = () => {
   return (
     <div id="wd-css-margins">

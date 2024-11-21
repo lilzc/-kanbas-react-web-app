@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Dimensions = () => {
   return (
     <div id="wd-css-dimensions">

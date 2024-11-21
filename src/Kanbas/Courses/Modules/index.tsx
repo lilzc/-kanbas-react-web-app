@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent } from 'react';
+import { useState, KeyboardEvent, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -7,12 +7,15 @@ import {
   updateModule, 
   editModule, 
   deleteLesson,
-  updateLesson 
+  updateLesson,
+  setModules
 } from './reducer';
 import ModulesControls from "./ModulesControls";
 import ModuleControlButtons from "./ModuleControlButtons";
 import LessonControlButtons from "./LessonControlButtons";
 import { BsGripVertical } from "react-icons/bs";
+import * as coursesClient from "../client";
+import * as modulesClient from "./client";
 
 interface Lesson {
   _id: string;
@@ -27,7 +30,7 @@ interface ModuleWithState {
   description: string;
   lessons: Lesson[];
   expanded: boolean;
-  editing?: boolean;
+  editing: boolean;
 }
 
 export default function Modules() {
@@ -42,38 +45,69 @@ export default function Modules() {
 
   const isFaculty = currentUser?.role === "FACULTY";
 
-  const handleAddModule = () => {
-    if (moduleName && isFaculty) {
-      dispatch(addModule({ name: moduleName, course: courseId }));
-      setModuleName("");
+  // Fetch modules when component loads
+  const fetchModules = async () => {
+    if (!courseId) return;
+    const modules = await coursesClient.findModulesForCourse(courseId);
+    dispatch(setModules(modules));
+  };
+
+  useEffect(() => {
+    fetchModules();
+  }, [courseId]);
+
+  // Create module handler
+  const createModuleForCourse = async () => {
+    if (!courseId || !moduleName || !isFaculty) return;
+    const newModule = { name: moduleName, course: courseId };
+    const module = await coursesClient.createModuleForCourse(courseId, newModule);
+    dispatch(addModule(module));
+    setModuleName("");
+  };
+
+  // Remove module handler
+  const removeModule = async (moduleId: string) => {
+    if (!isFaculty) return;
+    try {
+      await modulesClient.deleteModule(moduleId);
+      dispatch(deleteModule(moduleId));
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleDeleteModule = (moduleId: string) => {
-    if (isFaculty) {
-      dispatch(deleteModule(moduleId));
+  // Save module handler
+  const saveModule = async (module: ModuleWithState) => {
+    if (!isFaculty) return;
+    try {
+      await modulesClient.updateModule(module);
+      dispatch(updateModule({
+        ...module,
+        editing: false
+      }));
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const handleEditModule = (moduleId: string) => {
-    if (isFaculty) {
-      const module = modules.find(m => m._id === moduleId);
-      if (module) {
-        setEditingModuleName(module.name);
-        dispatch(editModule(moduleId));
-      }
+    if (!isFaculty) return;
+    const module = modules.find(m => m._id === moduleId);
+    if (module) {
+      setEditingModuleName(module.name);
+      dispatch(editModule(moduleId));
     }
   };
 
-  const handleUpdateModule = (module: ModuleWithState) => {
-    if (isFaculty) {
-      dispatch(updateModule({
-        ...module,
-        name: editingModuleName,
-        editing: false
-      }));
-      setEditingModuleName("");
-    }
+  const handleUpdateModule = async (module: ModuleWithState) => {
+    if (!isFaculty) return;
+    const updatedModule: ModuleWithState = {
+      ...module,
+      name: editingModuleName,
+      editing: false
+    };
+    await saveModule(updatedModule);
+    setEditingModuleName("");
   };
 
   const handleCancelModuleEdit = (module: ModuleWithState) => {
@@ -132,16 +166,35 @@ export default function Modules() {
   const toggleModuleExpansion = (moduleId: string) => {
     const module = modules.find((mod) => mod._id === moduleId);
     if (module) {
-      dispatch(updateModule({ ...module, expanded: !module.expanded }));
+      const updatedModule: ModuleWithState = {
+        ...module,
+        expanded: !module.expanded,
+        editing: !!module.editing
+      };
+      dispatch(updateModule(updatedModule));
     }
   };
 
   const collapseAllModules = () => {
-    modules.forEach((module) => dispatch(updateModule({ ...module, expanded: false })));
+    modules.forEach((module: ModuleWithState) => {
+      const updatedModule: ModuleWithState = {
+        ...module,
+        expanded: false,
+        editing: !!module.editing
+      };
+      dispatch(updateModule(updatedModule));
+    });
   };
 
   const expandAllModules = () => {
-    modules.forEach((module) => dispatch(updateModule({ ...module, expanded: true })));
+    modules.forEach((module: ModuleWithState) => {
+      const updatedModule: ModuleWithState = {
+        ...module,
+        expanded: true,
+        editing: !!module.editing
+      };
+      dispatch(updateModule(updatedModule));
+    });
   };
 
   return (
@@ -152,91 +205,91 @@ export default function Modules() {
           onExpandAll={expandAllModules}
           moduleName={moduleName}
           setModuleName={setModuleName}
-          addModule={handleAddModule}
+          addModule={createModuleForCourse}
         />
       )}
       <br /><br /><br />
       
       <ul id="wd-modules" className="list-group rounded-0">
-        {modules.filter((mod) => mod.course === courseId).map((mod) => (
-          <li key={mod._id} className="wd-module list-group-item p-0 mb-5 fs-5 border-gray">
+        {modules.map((module) => (
+          <li key={module._id} className="wd-module list-group-item p-0 mb-5 fs-5 border-gray">
             <div className="wd-title p-3 ps-2 bg-secondary d-flex justify-content-between align-items-center">
-  <div className="d-flex align-items-center flex-grow-1">
-    <BsGripVertical className="me-2 fs-3" />
-    {!mod.editing ? (
-      <span onClick={() => toggleModuleExpansion(mod._id)} style={{ cursor: 'pointer' }}>
-        {mod.name} {mod.expanded ? '▲' : '▼'}
-      </span>
-    ) : (
-      <div className="d-flex align-items-center flex-grow-1">
-        <input
-          className="form-control me-2"
-          style={{ width: "300px" }}
-          value={editingModuleName}
-          onChange={(e) => setEditingModuleName(e.target.value)}
-          onKeyDown={(e) => handleModuleKeyDown(e, mod)}
-          autoFocus
-        />
-        <div className="ms-2">
-          <button 
-            className="btn btn-success btn-sm me-2"
-            onClick={() => handleUpdateModule(mod)}
-          >
-            Save
-          </button>
-          <button 
-            className="btn btn-secondary btn-sm"
-            onClick={() => handleCancelModuleEdit(mod)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    )}
-  </div>
-  {isFaculty && !mod.editing && (
-    <div className="ms-2">
-      <ModuleControlButtons 
-        moduleId={mod._id}
-        deleteModule={handleDeleteModule}
-        editModule={handleEditModule}
-      />
-    </div>
-  )}
-</div>
-            {mod.expanded && (
+              <div className="d-flex align-items-center flex-grow-1">
+                <BsGripVertical className="me-2 fs-3" />
+                {!module.editing ? (
+                  <span onClick={() => toggleModuleExpansion(module._id)} style={{ cursor: 'pointer' }}>
+                    {module.name} {module.expanded ? '▲' : '▼'}
+                  </span>
+                ) : (
+                  <div className="d-flex align-items-center flex-grow-1">
+                    <input
+                      className="form-control me-2"
+                      style={{ width: "300px" }}
+                      value={editingModuleName}
+                      onChange={(e) => setEditingModuleName(e.target.value)}
+                      onKeyDown={(e) => handleModuleKeyDown(e, module)}
+                      autoFocus
+                    />
+                    <div className="ms-2">
+                      <button 
+                        className="btn btn-success btn-sm me-2"
+                        onClick={() => handleUpdateModule(module)}
+                      >
+                        Save
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleCancelModuleEdit(module)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {isFaculty && !module.editing && (
+                <div className="ms-2">
+                  <ModuleControlButtons 
+                    moduleId={module._id}
+                    deleteModule={removeModule}
+                    editModule={handleEditModule}
+                  />
+                </div>
+              )}
+            </div>
+            {module.expanded && (
               <ul className="wd-lessons list-group rounded-0">
-                {mod.lessons.map((lesson) => (
+                {module.lessons.map((lesson) => (
                   <li key={lesson._id} className="wd-lesson list-group-item p-3 ps-1">
                     <BsGripVertical className="me-2 fs-3" />
                     {editingLesson?._id === lesson._id ? (
-  <div className="d-flex align-items-center">
-    <input
-      className="form-control me-2"
-      style={{ width: "300px" }}
-      value={editingLessonName}
-      onChange={(e) => setEditingLessonName(e.target.value)}
-      onKeyDown={handleLessonKeyDown}
-      autoFocus
-    />
-    <div className="ms-2">
-      <button 
-        className="btn btn-success btn-sm me-2"
-        onClick={handleSaveLesson}
-      >
-        Save
-      </button>
-      <button 
-        className="btn btn-secondary btn-sm"
-        onClick={handleCancelEdit}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-) : (
-  <span className="ms-2">{lesson.name}</span>
-)}
+                      <div className="d-flex align-items-center">
+                        <input
+                          className="form-control me-2"
+                          style={{ width: "300px" }}
+                          value={editingLessonName}
+                          onChange={(e) => setEditingLessonName(e.target.value)}
+                          onKeyDown={handleLessonKeyDown}
+                          autoFocus
+                        />
+                        <div className="ms-2">
+                          <button 
+                            className="btn btn-success btn-sm me-2"
+                            onClick={handleSaveLesson}
+                          >
+                            Save
+                          </button>
+                          <button 
+                            className="btn btn-secondary btn-sm"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="ms-2">{lesson.name}</span>
+                    )}
                     {isFaculty && editingLesson?._id !== lesson._id && (
                       <LessonControlButtons 
                         lesson={lesson}

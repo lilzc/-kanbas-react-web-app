@@ -1,203 +1,424 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { enrollInCourse, unenrollFromCourse } from "./Account/reducer";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { RootState } from "./store";
-import * as db from "./Database";
+import { Course, DashboardProps, Enrollment } from "./interfaces";
+import * as courseClient from "./Courses/client";
+import * as enrollmentClient from "./Enrollments/client";
 import './Dashboard.css';
 
-interface DashboardProps {
-  courses: any[];
-  course: any;
-  setCourse: (course: any) => void;
-  addNewCourse: () => void;
-  deleteCourse: (courseId: string) => void;
-  updateCourse: () => void;
-}
+const INITIAL_COURSE_STATE: Course = {
+  _id: "",
+  name: "",
+  number: "",
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: new Date(new Date().setMonth(new Date().getMonth() + 4)).toISOString().split('T')[0],
+  description: ""
+};
 
 export default function Dashboard({
-  courses,
   course,
   setCourse,
   addNewCourse,
   deleteCourse,
   updateCourse
 }: DashboardProps) {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { currentUser, enrollments, unenrolledDbCourses } = useSelector(
-    (state: RootState) => state.accountReducer
-  );
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const [showAllCourses, setShowAllCourses] = useState(false);
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+  const [facultyCourses, setFacultyCourses] = useState<string[]>([]);
+  const [allDatabaseCourses, setAllDatabaseCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isStudent = currentUser?.role === "STUDENT";
   const isFaculty = currentUser?.role === "FACULTY";
 
-  const isEnrolled = (courseId: string): boolean => {
-    if (!isStudent) return false;
-    
-    const isInDatabase = db.enrollments.some(
-      enrollment => 
-        enrollment.user === currentUser?._id && 
-        enrollment.course === courseId
-    );
-    
-    if (isInDatabase && !unenrolledDbCourses.includes(courseId)) {
-      return true;
+  const isOwnCourse = (courseId: string): boolean => {
+    return facultyCourses.includes(courseId);
+  };
+
+  const fetchData = async () => {
+    if (!currentUser?._id) {
+      setIsLoading(false);
+      return;
     }
-    
-    // Check Redux enrollments
-    return enrollments.some(
-      enrollment => 
-        enrollment.user === currentUser?._id && 
-        enrollment.course === courseId
-    );
-  };
 
-  const handleEnroll = (courseId: string) => {
-    dispatch(enrollInCourse({
-      user: currentUser?._id,
-      course: courseId,
-    }));
-  };
+    try {
+      setError(null);
+      setIsLoading(true);
 
-  const handleUnenroll = (courseId: string) => {
-    dispatch(unenrollFromCourse({
-      user: currentUser?._id,
-      course: courseId,
-    }));
-  };
-
-  const handleCourseClick = (courseId: string, e: React.MouseEvent) => {
-    if (isStudent && !isEnrolled(courseId)) {
-      e.preventDefault();
-      navigate("/Kanbas/Dashboard");
+      const allCourses = await courseClient.fetchAllCourses();
+      
+      if (currentUser._id) {
+        const enrollments: Enrollment[] = await enrollmentClient.findEnrollmentsByUser(currentUser._id);
+        
+        if (isFaculty) {
+          const facultyEnrollments = enrollments.map((enrollment: Enrollment) => enrollment.course);
+          setFacultyCourses(facultyEnrollments);
+          // Show all courses created by this faculty
+          const facultyCoursesList = allCourses.filter((course: Course) => 
+            facultyEnrollments.includes(course._id)
+          );
+          setAllDatabaseCourses(facultyCoursesList);
+        } else {
+          setEnrolledCourses(enrollments.map((enrollment: Enrollment) => enrollment.course));
+          setAllDatabaseCourses(allCourses);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      setError(error.message || "Failed to load courses. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const displayedCourses = !showAllCourses && isStudent
-    ? courses.filter((course) => isEnrolled(course._id))
-    : courses;
+  useEffect(() => {
+    fetchData();
+  }, [currentUser?._id]);
+
+  const resetCourseForm = () => {
+    setCourse(INITIAL_COURSE_STATE);
+  };
+
+  const handleAddCourse = async () => {
+    if (!currentUser?._id) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      // Validate required fields
+      if (!course.name || !course.number) {
+        throw new Error("Course name and number are required.");
+      }
+
+      // Add faculty ID to course creation
+      const newCourse = {
+        ...course,
+        facultyId: currentUser._id
+      };
+
+      await addNewCourse();
+      
+      // Create faculty enrollment for the new course
+      const createdCourse = await courseClient.fetchAllCourses();
+      const latestCourse = createdCourse[createdCourse.length - 1];
+      
+      if (latestCourse) {
+        await enrollmentClient.enrollInCourse(currentUser._id, latestCourse._id);
+        setFacultyCourses(prev => [...prev, latestCourse._id]);
+      }
+
+      await fetchData(); // Refresh the course list
+      resetCourseForm();
+      
+    } catch (error: any) {
+      setError(error.message || "Failed to add course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateCourse = async () => {
+    if (!currentUser?._id) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      if (!course._id || !isOwnCourse(course._id)) {
+        throw new Error("You can only edit courses you're enrolled in as faculty.");
+      }
+
+      // Validate required fields
+      if (!course.name || !course.number) {
+        throw new Error("Course name and number are required.");
+      }
+
+      await updateCourse();
+      await fetchData();
+      resetCourseForm();
+
+    } catch (error: any) {
+      setError(error.message || "Failed to update course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!currentUser?._id) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      if (!isOwnCourse(courseId)) {
+        throw new Error("You can only delete courses you're enrolled in as faculty.");
+      }
+
+      await deleteCourse(courseId);
+      await enrollmentClient.unenrollFromCourse(currentUser._id, courseId);
+      setFacultyCourses(prev => prev.filter(id => id !== courseId));
+      await fetchData();
+
+    } catch (error: any) {
+      setError(error.message || "Failed to delete course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEnroll = async (courseId: string) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      await enrollmentClient.enrollInCourse(currentUser._id, courseId);
+      setEnrolledCourses(prev => [...prev, courseId]);
+    } catch (error: any) {
+      setError(error.message || "Failed to enroll in course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUnenroll = async (courseId: string) => {
+    if (!currentUser?._id) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      await enrollmentClient.unenrollFromCourse(currentUser._id, courseId);
+      setEnrolledCourses(prev => prev.filter(id => id !== courseId));
+    } catch (error: any) {
+      setError(error.message || "Failed to unenroll from course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredCourses = isFaculty 
+    ? allDatabaseCourses 
+    : showAllCourses 
+      ? allDatabaseCourses 
+      : allDatabaseCourses.filter((course: Course) => enrolledCourses.includes(course._id));
+
+  const searchFilteredCourses = filteredCourses.filter((course: Course) =>
+    course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!currentUser) {
+    return <div className="p-4">Please log in to view the dashboard.</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-4 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div id="wd-dashboard">
-      <h1 id="wd-dashboard-title">Dashboard</h1>
-      <hr />
-      
-      {isStudent && (
-        <button 
-          className="btn btn-primary float-end mb-2"
-          onClick={() => setShowAllCourses(!showAllCourses)}
-          style={{ backgroundColor: '#0d6efd' }}
-        >
-          Enrollments
-        </button>
+    <div className="p-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard</h1>
+        <div className="d-flex gap-2">
+          {isStudent && (
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowAllCourses(!showAllCourses)}
+            >
+              {showAllCourses ? "My Courses" : "All Courses"}
+            </button>
+          )}
+          <input
+            type="search"
+            className="form-control"
+            placeholder="Search courses..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
       )}
 
       {isFaculty && (
-        <>
-          <h5>New Course</h5>
-          <input 
-            value={course.name}
-            className="form-control mb-2"
-            onChange={(e) => setCourse({ ...course, name: e.target.value })}
-          />
-          <textarea 
-            value={course.description}
-            className="form-control"
-            onChange={(e) => setCourse({ ...course, description: e.target.value })}
-          />
-          <button 
-            className="btn btn-warning float-end me-2"
-            onClick={updateCourse}
-            id="wd-update-course-click"
-          >
-            Update
-          </button>
-          <button 
-            className="btn btn-primary float-end"
-            onClick={addNewCourse}
-            id="wd-add-new-course-click"
-          >
-            Add
-          </button>
-          <hr />
-        </>
-      )}
-
-      <h2 id="wd-dashboard-published">
-        {!showAllCourses && isStudent ? "My Courses" : "Published Courses"} ({displayedCourses.length})
-      </h2>
-      <hr />
-      <div id="wd-dashboard-courses" className="row row-cols-1 row-cols-md-5 g-4">
-        {displayedCourses.map((c) => (
-          <div key={c._id} className="wd-dashboard-course col">
-            <div className="card rounded-3 overflow-hidden h-100 d-flex flex-column">
-              {isStudent && (
-                <div className="card-header">
-                  {isEnrolled(c._id) ? (
-                    <button
-                      className="btn btn-danger w-100"
-                      onClick={() => handleUnenroll(c._id)}
-                    >
-                      Unenroll
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-success w-100"
-                      onClick={() => handleEnroll(c._id)}
-                    >
-                      Enroll
-                    </button>
-                  )}
-                </div>
-              )}
-              
-              <Link 
-                to={`/Kanbas/Courses/${c._id}/Home`} 
-                className="wd-dashboard-course-link text-decoration-none text-dark"
-                onClick={(e) => handleCourseClick(c._id, e)}
-              >
-                <img src={`/images/${c.image || 'reactjs.jpg'}`} alt={c.name} />
-                <div className="card-body">
-                  <h5 className="wd-dashboard-course-title card-title">
-                    {c.name}
-                  </h5>
-                  <p className="wd-dashboard-course-description card-text">
-                    {c.description}
-                  </p>
-                  <button className="btn btn-primary">Go</button>
-                </div>
-              </Link>
-              
-              {isFaculty && (
-                <div className="d-flex flex-column">
+        <div className="card mb-4">
+          <div className="card-body">
+            <h5 className="card-title">{course._id ? "Edit Course" : "Create New Course"}</h5>
+            <input 
+              value={course.name}
+              className="form-control mb-2"
+              onChange={(e) => setCourse({ ...course, name: e.target.value })}
+              placeholder="Course Name"
+              id="wd-course-name"
+              required
+            />
+            <input 
+              value={course.number}
+              className="form-control mb-2"
+              onChange={(e) => setCourse({ ...course, number: e.target.value })}
+              placeholder="Course Number"
+              id="wd-course-number"
+              required
+            />
+            <input 
+              value={course.startDate}
+              className="form-control mb-2"
+              type="date"
+              onChange={(e) => setCourse({ ...course, startDate: e.target.value })}
+              id="wd-course-start-date"
+            />
+            <input 
+              value={course.endDate}
+              className="form-control mb-2"
+              type="date"
+              onChange={(e) => setCourse({ ...course, endDate: e.target.value })}
+              id="wd-course-end-date"
+            />
+            <textarea 
+              value={course.description}
+              className="form-control mb-2"
+              onChange={(e) => setCourse({ ...course, description: e.target.value })}
+              placeholder="Course Description"
+              id="wd-course-description"
+            />
+            <div className="text-end">
+              {course._id ? (
+                <>
                   <button 
-                    className="btn btn-warning w-100"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCourse({ ...c });
-                    }}
-                    id="wd-edit-course-click"
+                    className="btn btn-secondary me-2"
+                    onClick={resetCourseForm}
+                    disabled={isSubmitting}
                   >
-                    Edit
+                    Cancel
                   </button>
                   <button 
-                    className="btn btn-danger w-100"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      deleteCourse(c._id);
-                    }}
-                    id="wd-delete-course-click"
+                    className="btn btn-warning"
+                    onClick={handleUpdateCourse}
+                    disabled={isSubmitting || !isOwnCourse(course._id)}
+                    id="wd-update-course"
                   >
-                    Delete
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
-                </div>
+                </>
+              ) : (
+                <button 
+                  className="btn btn-success"
+                  onClick={handleAddCourse}
+                  disabled={isSubmitting}
+                  id="wd-create-course"
+                >
+                  {isSubmitting ? "Creating..." : "Create Course"}
+                </button>
               )}
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      <h2 className="mb-4">
+        {isFaculty ? "My Courses" : "Published Courses"} ({searchFilteredCourses.length})
+      </h2>
+
+      {searchFilteredCourses.length === 0 ? (
+        <div className="alert alert-info">
+          No courses found. {searchTerm && "Try adjusting your search."}
+        </div>
+      ) : (
+        <div className="row g-4">
+          {searchFilteredCourses.map((c) => (
+            <div key={c._id} className="col-xl-3 col-lg-4 col-md-6 col-12">
+              <div className="card h-100">
+                {isStudent && (
+                  <div className="card-header border-0 bg-transparent p-0">
+                    <button
+                      className={`btn w-100 ${
+                        enrolledCourses.includes(c._id)
+                          ? "btn-danger"
+                          : "btn-success"
+                      } rounded-0`}
+                      onClick={() =>
+                        enrolledCourses.includes(c._id)
+                          ? handleUnenroll(c._id)
+                          : handleEnroll(c._id)
+                      }
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting 
+                        ? "Processing..." 
+                        : enrolledCourses.includes(c._id) 
+                          ? "Unenroll" 
+                          : "Enroll"
+                      }
+                    </button>
+                  </div>
+                )}
+
+                <img
+                  src={`/images/${c.image || 'default-course.jpg'}`}
+                  alt={c.name}
+                  className="card-img-top"
+                  style={{ height: "200px", objectFit: "cover" }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/default-course.jpg';
+                  }}
+                />
+
+                <div className="card-body d-flex flex-column">
+                  <h5 className="card-title">{c.name}</h5>
+                  <p className="card-text text-muted small mb-2">{c.number}</p>
+                  <p className="card-text">{c.description}</p>
+                  <div className="mt-auto">
+                    <Link 
+                      to={`/Kanbas/Courses/${c._id}/Home`}
+                      className="btn btn-primary w-100"
+                    >
+                      View Course
+                    </Link>
+                  </div>
+                </div>
+
+                {isFaculty && isOwnCourse(c._id) && (
+                  <div className="card-footer bg-transparent">
+                    <button
+                      className="btn btn-warning w-100 mb-2"
+                      onClick={() => setCourse(c)}
+                      disabled={isSubmitting}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger w-100"
+                      onClick={() => handleDeleteCourse(c._id)}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

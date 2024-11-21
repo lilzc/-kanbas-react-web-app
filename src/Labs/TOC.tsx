@@ -1,4 +1,3 @@
-import React from 'react';
 import { useLocation } from "react-router";
 import './TOC.css';
 
@@ -35,6 +34,10 @@ export default function TOC() {
              className={`nav-link rounded-pill px-3 ${pathname.includes("Lab4") ? "active" : ""}`}>
             Lab 4
           </a>
+          <a id="wd-a4" href="#/Labs/Lab5"
+             className={`nav-link rounded-pill px-3 ${pathname.includes("Lab5") ? "active" : ""}`}>
+            Lab 5
+          </a>
         </div>
 
         <ul className="nav nav-pills" id="wd-toc">
@@ -50,7 +53,25 @@ export default function TOC() {
                target="_blank"
                rel="noopener noreferrer"
                className="nav-link">
-              My GitHub Repository
+              React App Repository
+            </a>
+          </li>
+          <li className="nav-item">
+            <a id="wd-node-server" 
+               href="https://github.com/lilzc/-kanbas-node-server-app"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="nav-link">
+              Node Server Repository
+            </a>
+          </li>
+          <li className="nav-item">
+            <a id="wd-server-api" 
+               href="https://kanbas-node-server-app-lilzc-18dd5f08439b.herokuapp.com/"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="nav-link">
+              Node Server API
             </a>
           </li>
         </ul>

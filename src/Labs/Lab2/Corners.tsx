@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Corners = () => {
   return (
     <div id="wd-css-borders">

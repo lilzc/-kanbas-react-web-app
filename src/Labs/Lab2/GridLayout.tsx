@@ -1,5 +1,3 @@
-import React from 'react';
-
 const GridLayout = () => {
   return (
     <div id="wd-css-grid-layout">

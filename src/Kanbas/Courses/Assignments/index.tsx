@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteAssignment } from './reducer';
+import { deleteAssignment, fetchAssignmentsForCourse } from './reducer';
 import type { RootState } from '../../store';
 
 interface User {
@@ -23,9 +23,16 @@ export default function Assignments() {
     state.accountReducer.currentUser as User | null
   );
 
-  const assignments = useSelector((state: RootState) => 
-    state.assignmentsReducer?.assignments.filter(a => a.course === courseId) || []
+  const { assignments, loading, error } = useSelector((state: RootState) => 
+    state.assignmentsReducer
   );
+
+  // Fetch assignments when component mounts or courseId changes
+  useEffect(() => {
+    if (courseId) {
+      dispatch(fetchAssignmentsForCourse(courseId) as any);
+    }
+  }, [courseId, dispatch]);
 
   const isFaculty = currentUser?.role === "FACULTY";
 
@@ -38,11 +45,15 @@ export default function Assignments() {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (assignmentToDelete) {
-      dispatch(deleteAssignment(assignmentToDelete));
-      setShowDeleteModal(false);
-      setAssignmentToDelete(null);
+      try {
+        await dispatch(deleteAssignment(assignmentToDelete) as any);
+        setShowDeleteModal(false);
+        setAssignmentToDelete(null);
+      } catch (err) {
+        console.error("Failed to delete assignment:", err);
+      }
     }
   };
 
@@ -57,9 +68,19 @@ export default function Assignments() {
     }
   };
 
-  const filteredAssignments = assignments.filter(a => 
-    a.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAssignments = assignments
+    .filter(a => a.course === courseId)
+    .filter(a => 
+      a.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  if (loading) {
+    return <div>Loading assignments...</div>;
+  }
+
+  if (error) {
+    return <div className="alert alert-danger">Error loading assignments: {error}</div>;
+  }
 
   return (
     <div className="p-4">

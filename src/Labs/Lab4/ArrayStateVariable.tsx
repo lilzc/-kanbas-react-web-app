@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function ArrayStateVariable() {
   const [array, setArray] = useState<number[]>([1, 2, 3, 4, 5]);

@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export default function ArrayIndexAndLength() {
   let numberArray1 = [1, 2, 3, 4, 5];

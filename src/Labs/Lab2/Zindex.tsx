@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Zindex = () => {
   return (
     <div id="wd-z-index">

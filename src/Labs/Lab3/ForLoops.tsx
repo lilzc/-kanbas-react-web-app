@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function ForLoops() {
   let stringArray1 = ["string1", "string3"];
   let stringArray2: string[] = [];

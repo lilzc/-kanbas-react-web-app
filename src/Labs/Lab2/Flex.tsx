@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Flex = () => {
   return (
     <div id="wd-css-flex">

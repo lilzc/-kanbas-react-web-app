@@ -1,4 +1,3 @@
-import React from 'react';
 
 const multiply = (a: number, b: number) => a * b;
 

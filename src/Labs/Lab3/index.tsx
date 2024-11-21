@@ -1,4 +1,3 @@
-import React from 'react';
 import VariablesAndConstants from "./VariablesAndConstants";
 import BooleanVariables from "./BooleanVariables";
 import IfElse from "./IfElse";

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ModuleControlButtonsProps {
   moduleId: string;
   deleteModule: (moduleId: string) => void;

@@ -1,5 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { modules as initialModules } from "../../Database";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Lesson {
   _id: string;
@@ -20,43 +19,30 @@ interface ModuleWithState extends Module {
   editing: boolean;
 }
 
-// Type guard to ensure mod is a Module
-function isModule(mod: any): mod is Module {
-  return mod && typeof mod._id === 'string';
+interface ModulesState {
+  modules: ModuleWithState[];
 }
 
-const initialState = {
-  modules: initialModules.map((mod): ModuleWithState => {
-    if (isModule(mod)) {
-      return {
-        ...mod,
-        lessons: Array.isArray(mod.lessons) ? mod.lessons : [],
-        expanded: false,
-        editing: false,
-      };
-    }
-    return {
-      _id: '',
-      name: '',
-      course: '',
-      description: '',
-      lessons: [],
-      expanded: false,
-      editing: false,
-    };
-  }),
+const initialState: ModulesState = {
+  modules: []
 };
 
 const modulesSlice = createSlice({
   name: "modules",
   initialState,
   reducers: {
-    addModule: (state, action) => {
+    setModules: (state, action: PayloadAction<Module[]>) => {
+      state.modules = action.payload.map((mod): ModuleWithState => ({
+        ...mod,
+        lessons: Array.isArray(mod.lessons) ? mod.lessons : [],
+        expanded: false,
+        editing: false,
+      }));
+    },
+
+    addModule: (state, action: PayloadAction<Module>) => {
       const newModule: ModuleWithState = {
-        _id: new Date().getTime().toString(),
-        name: action.payload.name,
-        course: action.payload.course,
-        description: "New Module",
+        ...action.payload,
         lessons: [],
         expanded: false,
         editing: false,
@@ -64,13 +50,13 @@ const modulesSlice = createSlice({
       state.modules.push(newModule);
     },
 
-    deleteModule: (state, action) => {
+    deleteModule: (state, action: PayloadAction<string>) => {
       state.modules = state.modules.filter(
         (module) => module._id !== action.payload
       );
     },
 
-    updateModule: (state, action) => {
+    updateModule: (state, action: PayloadAction<ModuleWithState>) => {
       const index = state.modules.findIndex(
         (module) => module._id === action.payload._id
       );
@@ -82,7 +68,7 @@ const modulesSlice = createSlice({
       }
     },
 
-    editModule: (state, action) => {
+    editModule: (state, action: PayloadAction<string>) => {
       const module = state.modules.find(
         (module) => module._id === action.payload
       );
@@ -91,7 +77,7 @@ const modulesSlice = createSlice({
       }
     },
 
-    addLesson: (state, action) => {
+    addLesson: (state, action: PayloadAction<{ moduleId: string; name: string }>) => {
       const { moduleId, name } = action.payload;
       const module = state.modules.find(
         (module) => module._id === moduleId
@@ -106,7 +92,7 @@ const modulesSlice = createSlice({
       }
     },
 
-    deleteLesson: (state, action) => {
+    deleteLesson: (state, action: PayloadAction<string>) => {
       state.modules.forEach(module => {
         module.lessons = module.lessons.filter(
           lesson => lesson._id !== action.payload
@@ -114,7 +100,7 @@ const modulesSlice = createSlice({
       });
     },
 
-    updateLesson: (state, action) => {
+    updateLesson: (state, action: PayloadAction<{ lessonId: string; name: string }>) => {
       const { lessonId, name } = action.payload;
       state.modules.forEach(module => {
         const lesson = module.lessons.find(
@@ -126,7 +112,7 @@ const modulesSlice = createSlice({
       });
     },
 
-    setModuleExpansion: (state, action) => {
+    setModuleExpansion: (state, action: PayloadAction<{ moduleId: string; expanded: boolean }>) => {
       const { moduleId, expanded } = action.payload;
       const module = state.modules.find(
         module => module._id === moduleId
@@ -136,7 +122,7 @@ const modulesSlice = createSlice({
       }
     },
 
-    setAllModulesExpansion: (state, action) => {
+    setAllModulesExpansion: (state, action: PayloadAction<boolean>) => {
       state.modules.forEach(module => {
         module.expanded = action.payload;
       });
@@ -145,6 +131,7 @@ const modulesSlice = createSlice({
 });
 
 export const {
+  setModules,
   addModule,
   deleteModule,
   updateModule,

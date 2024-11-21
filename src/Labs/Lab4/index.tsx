@@ -1,4 +1,3 @@
-import React from "react";
 import PassingDataOnEvent from "./PassingDataOnEvent";
 import PassingFunctions from "./PassingFunctions";
 import EventObject from "./EventObject";

@@ -1,4 +1,3 @@
-import React from "react";
 import Modules from "../Modules";
 import CourseStatus from "./Status";
 import { useSelector } from "react-redux";

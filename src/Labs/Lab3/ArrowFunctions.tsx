@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const subtract = (a: number, b: number) => {
   return a - b;

@@ -1,5 +1,3 @@
-import React from 'react';
-
 const add = (a: number, b: number) => {
   alert(`${a} + ${b} = ${a + b}`);
 };

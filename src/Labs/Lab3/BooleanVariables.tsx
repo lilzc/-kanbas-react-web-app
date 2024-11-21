@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function BooleanVariables() {
   let numberVariable = 123, floatingPointNumber = 234.345;
   let true1 = true, false1 = false;
