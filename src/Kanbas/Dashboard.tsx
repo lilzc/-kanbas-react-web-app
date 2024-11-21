@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
@@ -40,7 +40,7 @@ export default function Dashboard({
     return facultyCourses.includes(courseId);
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!currentUser?._id) {
       setIsLoading(false);
       return;
@@ -51,15 +51,14 @@ export default function Dashboard({
       setIsLoading(true);
 
       const allCourses = await courseClient.fetchAllCourses();
-      
+
       if (currentUser._id) {
         const enrollments: Enrollment[] = await enrollmentClient.findEnrollmentsByUser(currentUser._id);
-        
+
         if (isFaculty) {
           const facultyEnrollments = enrollments.map((enrollment: Enrollment) => enrollment.course);
           setFacultyCourses(facultyEnrollments);
-          // Show all courses created by this faculty
-          const facultyCoursesList = allCourses.filter((course: Course) => 
+          const facultyCoursesList = allCourses.filter((course: Course) =>
             facultyEnrollments.includes(course._id)
           );
           setAllDatabaseCourses(facultyCoursesList);
@@ -74,11 +73,11 @@ export default function Dashboard({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser?._id, isFaculty]);
 
   useEffect(() => {
     fetchData();
-  }, [currentUser?._id]);
+  }, [fetchData]);
 
   const resetCourseForm = () => {
     setCourse(INITIAL_COURSE_STATE);
@@ -114,7 +113,7 @@ export default function Dashboard({
       
     } catch (error: any) {
       setError(error.message || "Failed to add course. Please try again.");
-    } finally {
+    } finally {fetchData
       setIsSubmitting(false);
     }
   };
@@ -122,7 +121,7 @@ export default function Dashboard({
   useEffect(() => {
     fetchData();
   }, [currentUser?._id]);
-  
+
   const handleUpdateCourse = async () => {
     if (!currentUser?._id) return;
 

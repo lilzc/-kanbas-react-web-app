@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent, useEffect } from 'react';
+import { useState, KeyboardEvent, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -45,16 +45,19 @@ export default function Modules() {
 
   const isFaculty = currentUser?.role === "FACULTY";
 
-  const fetchModules = async () => {
+  const fetchModules = useCallback(async () => {
     if (!courseId) return;
-    const modules = await coursesClient.findModulesForCourse(courseId);
-    dispatch(setModules(modules));
-  };
-
+    try {
+      const modules = await coursesClient.findModulesForCourse(courseId);
+      dispatch(setModules(modules));
+    } catch (error) {
+      console.error("Error fetching modules:", error);
+    }
+  }, [courseId, dispatch]);
 
   useEffect(() => {
     fetchModules();
-  }, [courseId]);
+  }, [fetchModules]);
 
 
   const createModuleForCourse = async () => {
@@ -65,7 +68,7 @@ export default function Modules() {
     setModuleName("");
   };
 
-  // Remove module handler
+
   const removeModule = async (moduleId: string) => {
     if (!isFaculty) return;
     try {
@@ -76,7 +79,7 @@ export default function Modules() {
     }
   };
 
-  // Save module handler
+
   const saveModule = async (module: ModuleWithState) => {
     if (!isFaculty) return;
     try {
