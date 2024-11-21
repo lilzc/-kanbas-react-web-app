@@ -115,11 +115,6 @@ export default function Dashboard({
     }
   };
 
-
-  useEffect(() => {
-    fetchData();
-  }, [currentUser?._id]);
-
   const handleUpdateCourse = async () => {
     if (!currentUser?._id) return;
 
