@@ -1,6 +1,6 @@
 import { FaUserCircle } from "react-icons/fa";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import * as client from "./client";
 
 interface User {
@@ -24,9 +24,12 @@ export default function PeopleTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    if (!courseId) return;
+    
     try {
-      const fetchedUsers = await client.findUsersForCourse(courseId!);
+      setLoading(true);
+      const fetchedUsers = await client.findUsersForCourse(courseId);
       setUsers(fetchedUsers);
     } catch (err) {
       setError("Failed to fetch users");
@@ -34,11 +37,11 @@ export default function PeopleTable() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]); // courseId as dependency
 
   useEffect(() => {
     fetchUsers();
-  }, [courseId]);
+  }, [fetchUsers]); // fetchUsers as dependency
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;

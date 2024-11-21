@@ -45,18 +45,18 @@ export default function Modules() {
 
   const isFaculty = currentUser?.role === "FACULTY";
 
-  // Fetch modules when component loads
   const fetchModules = async () => {
     if (!courseId) return;
     const modules = await coursesClient.findModulesForCourse(courseId);
     dispatch(setModules(modules));
   };
 
+
   useEffect(() => {
     fetchModules();
   }, [courseId]);
 
-  // Create module handler
+
   const createModuleForCourse = async () => {
     if (!courseId || !moduleName || !isFaculty) return;
     const newModule = { name: moduleName, course: courseId };

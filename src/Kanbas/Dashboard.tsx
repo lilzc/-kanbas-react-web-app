@@ -96,13 +96,9 @@ export default function Dashboard({
         throw new Error("Course name and number are required.");
       }
 
-      // Add faculty ID to course creation
-      const newCourse = {
-        ...course,
-        facultyId: currentUser._id
-      };
-
+      // Directly call addNewCourse without creating newCourse object
       await addNewCourse();
+
       
       // Create faculty enrollment for the new course
       const createdCourse = await courseClient.fetchAllCourses();
@@ -113,7 +109,7 @@ export default function Dashboard({
         setFacultyCourses(prev => [...prev, latestCourse._id]);
       }
 
-      await fetchData(); // Refresh the course list
+      await fetchData();
       resetCourseForm();
       
     } catch (error: any) {
@@ -123,6 +119,10 @@ export default function Dashboard({
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [currentUser?._id]);
+  
   const handleUpdateCourse = async () => {
     if (!currentUser?._id) return;
 
