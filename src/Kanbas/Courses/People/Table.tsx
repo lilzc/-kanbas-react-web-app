@@ -1,7 +1,5 @@
 import { FaUserCircle } from "react-icons/fa";
-import { useParams } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
-import * as client from "./client";
+import { Link } from "react-router-dom";
 
 interface User {
   _id: string;
@@ -18,34 +16,11 @@ interface User {
   totalActivity: string;
 }
 
-export default function PeopleTable() {
-  const { courseId } = useParams<{ courseId: string }>();
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface PeopleTableProps {
+  users?: User[];
+}
 
-  const fetchUsers = useCallback(async () => {
-    if (!courseId) return;
-    
-    try {
-      setLoading(true);
-      const fetchedUsers = await client.findUsersForCourse(courseId);
-      setUsers(fetchedUsers);
-    } catch (err) {
-      setError("Failed to fetch users");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [courseId]); // courseId as dependency
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]); // fetchUsers as dependency
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
-
+export default function PeopleTable({ users = [] }: PeopleTableProps) {
   return (
     <div id="wd-people-table">
       <table className="table table-striped">
@@ -62,9 +37,14 @@ export default function PeopleTable() {
           {users.map((user) => (
             <tr key={user._id}>
               <td className="wd-full-name text-nowrap">
-                <FaUserCircle className="me-2 fs-1 text-secondary" />
-                <span className="wd-first-name">{user.firstName}</span>{" "}
-                <span className="wd-last-name">{user.lastName}</span>
+                <Link
+                  to={`/Kanbas/Account/Users/${user._id}`}
+                  className="text-decoration-none"
+                >
+                  <FaUserCircle className="me-2 fs-1 text-secondary" />
+                  <span className="wd-first-name">{user.firstName}</span>{" "}
+                  <span className="wd-last-name">{user.lastName}</span>
+                </Link>
               </td>
               <td className="wd-login-id">{user.loginId}</td>
               <td className="wd-role">{user.role}</td>

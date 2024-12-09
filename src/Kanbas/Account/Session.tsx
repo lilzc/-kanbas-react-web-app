@@ -9,13 +9,15 @@ export default function Session({ children }: { children: any }) {
 
     const fetchProfile = useCallback(async () => {
         try {
+            console.log("Fetching profile...");
             const currentUser = await client.profile();
+            console.log("Profile response:", currentUser);
             dispatch(setCurrentUser(currentUser));
         } catch (err) {
-            console.error(err);
+            console.error("Profile fetch error:", err);
         }
         setPending(false);
-    }, [dispatch]); 
+    }, [dispatch]);
 
     useEffect(() => {
         fetchProfile();

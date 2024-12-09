@@ -6,7 +6,7 @@ import Account from "./Account";
 import Courses from "./Courses";
 import KanbasNavigation from "./Navigation";
 import Signin from "./Account/Signin";
-import ProtectedRoute from "./Account/ProtectedRoute";
+import KanbasProtectedRoute from "./ProtectedRoute";
 import AssignmentEditor from './Courses/Assignments/AssignmentEditor';
 import Session from "./Account/Session";
 import * as courseClient from "./Courses/client";
@@ -16,8 +16,10 @@ import "./Style.css";
 import "./KanbasNavigation.css";
 import "./Courses/Navigation";
 
+
 export default function Kanbas() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolling, setEnrolling] = useState<boolean>(false);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const [course, setCourse] = useState<Course>({
     _id: "1234",
@@ -28,59 +30,85 @@ export default function Kanbas() {
     description: "New Description"
   });
 
-  const fetchCourses = async () => {
-    try {
-      const fetchedCourses = await userClient.findMyCourses();
-      setCourses(fetchedCourses);
-    } catch (error) {
-      console.error(error);
-    }
+  const addNewCourse = async () => {
+    const newCourse = await courseClient.createCourse(course);
+    setCourses([...courses, newCourse]);
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, [currentUser]);
-
-
-const addNewCourse = async () => {
-  try {
-    const newCourse = {
-      ...course,
-      creator: currentUser?._id
-    };
-    const createdCourse = await courseClient.createCourse(newCourse);
-    setCourses([...courses, createdCourse]);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
   const deleteCourse = async (courseId: string) => {
-    try {
-      await courseClient.deleteCourse(courseId);
-      setCourses(courses.filter((course) => course._id !== courseId));
-    } catch (error) {
-      console.error(error);
-    }
+    await courseClient.deleteCourse(courseId);
+    setCourses(courses.filter((course) => course._id !== courseId));
   };
 
   const updateCourse = async () => {
     try {
       await courseClient.updateCourse(course);
       setCourses(
-        courses.map((c) => {
-          if (c._id === course._id) {
-            return course;
-          }
-          return c;
-        })
+        courses.map((c) => c._id === course._id ? course : c)
       );
     } catch (error) {
       console.error(error);
     }
   };
 
-  
+  const findCoursesForUser = async () => {
+    try {
+      if (!currentUser?._id) return;
+      const courses = await userClient.findMyCourses(currentUser._id);
+      setCourses(courses);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+const fetchCourses = async () => {
+  try {
+    if (!currentUser?._id) return;
+    const allCourses = await courseClient.fetchAllCourses();
+    const enrolledCourses = await userClient.findCoursesForUser(currentUser._id);
+    const courses = allCourses.map((course: Course) => ({
+      ...course,
+      enrolled: enrolledCourses.some((c: Course) => c._id === course._id)
+    }));
+    setCourses(courses);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  const updateEnrollment = async (courseId: string, enrolled: boolean) => {
+    try {
+      if (enrolled) {
+        await userClient.enrollIntoCourse(currentUser._id, courseId);
+      } else {
+        await userClient.unenrollFromCourse(currentUser._id, courseId);
+      }
+      
+      setCourses(courses.map((course) => 
+        course._id === courseId ? { ...course, enrolled } : course
+      ));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      enrolling ? fetchCourses() : findCoursesForUser();
+    }
+  }, [currentUser, enrolling]);
+
+  const dashboardProps = {
+    course,
+    courses, 
+    setCourse,
+    addNewCourse,
+    deleteCourse,
+    updateCourse,
+    enrolling,
+    setEnrolling,
+    updateEnrollment
+  };
 
   return (
     <Session>
@@ -94,42 +122,35 @@ const addNewCourse = async () => {
             <Route 
               path="Dashboard" 
               element={
-                <ProtectedRoute>
-                  <Dashboard
-                    course={course}
-                    setCourse={setCourse}
-                    addNewCourse={addNewCourse}
-                    deleteCourse={deleteCourse}
-                    updateCourse={updateCourse}
-                  />
-                </ProtectedRoute>
+                <KanbasProtectedRoute {...dashboardProps}>
+                  <Dashboard />
+                </KanbasProtectedRoute>
               } 
             />
-           <Route 
-  path="Courses" 
-  element={
-    <ProtectedRoute>
-      <Courses courses={courses} />
-    </ProtectedRoute>
-  } 
-/>
-<Route 
-  path="Courses/:courseId/*" 
-  element={
-    <ProtectedRoute>
-      <Courses courses={courses} />
-    </ProtectedRoute>
-  } 
-/>
-
+            <Route 
+              path="Courses" 
+              element={
+                <KanbasProtectedRoute {...dashboardProps}>
+                  <Courses courses={courses} />
+                </KanbasProtectedRoute>
+              } 
+            />
+            <Route 
+              path="Courses/:courseId/*" 
+              element={
+                <KanbasProtectedRoute {...dashboardProps}>
+                  <Courses courses={courses} />
+                </KanbasProtectedRoute>
+              } 
+            />
             <Route path="Calendar" element={<h1>Calendar</h1>} />
             <Route path="Inbox" element={<h1>Inbox</h1>} />
             <Route 
               path="Courses/:courseId/Assignments/:assignmentId/edit" 
               element={
-                <ProtectedRoute>
+                <KanbasProtectedRoute {...dashboardProps}>
                   <AssignmentEditor />
-                </ProtectedRoute>
+                </KanbasProtectedRoute>
               } 
             />
           </Routes>

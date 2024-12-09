@@ -1,416 +1,165 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
-import { Course, DashboardProps, Enrollment } from "./interfaces";
+import { Course } from "./interfaces";
 import * as courseClient from "./Courses/client";
 import * as enrollmentClient from "./Enrollments/client";
-import './Dashboard.css';
+import "./Dashboard.css";
 
-const INITIAL_COURSE_STATE: Course = {
-  _id: "",
-  name: "",
-  number: "",
-  startDate: new Date().toISOString().split('T')[0],
-  endDate: new Date(new Date().setMonth(new Date().getMonth() + 4)).toISOString().split('T')[0],
-  description: ""
-};
-
-export default function Dashboard({
-  course,
-  setCourse,
-  addNewCourse,
-  deleteCourse,
-  updateCourse
-}: DashboardProps) {
+export default function Dashboard() {
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
-  const [showAllCourses, setShowAllCourses] = useState(false);
-  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  const [facultyCourses, setFacultyCourses] = useState<string[]>([]);
-  const [allDatabaseCourses, setAllDatabaseCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolling, setEnrolling] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isStudent = currentUser?.role === "STUDENT";
-  const isFaculty = currentUser?.role === "FACULTY";
-
-  const isOwnCourse = (courseId: string): boolean => {
-    return facultyCourses.includes(courseId);
-  };
-
-  const fetchData = useCallback(async () => {
+  const fetchCourses = async () => {
     if (!currentUser?._id) {
+      console.log("No current user, skipping fetch");
       setIsLoading(false);
       return;
     }
-
     try {
-      setError(null);
       setIsLoading(true);
-
+      console.log("Fetching courses for user:", currentUser._id);
+      
       const allCourses = await courseClient.fetchAllCourses();
+      console.log("Fetched courses:", allCourses);
+      
+      const enrolledCourses = await enrollmentClient.findEnrollmentsByUser(currentUser._id);
+      console.log("Fetched enrollments:", enrolledCourses);
+      
+      const enrolledIds = new Set(enrolledCourses.map((e: any) => e.course._id));
+      const coursesWithEnrollment = allCourses.map((course: Course) => ({
+        ...course,
+        enrolled: enrolledIds.has(course._id)
+      }));
 
-      if (currentUser._id) {
-        const enrollments: Enrollment[] = await enrollmentClient.findEnrollmentsByUser(currentUser._id);
-
-        if (isFaculty) {
-          const facultyEnrollments = enrollments.map((enrollment: Enrollment) => enrollment.course);
-          setFacultyCourses(facultyEnrollments);
-          const facultyCoursesList = allCourses.filter((course: Course) =>
-            facultyEnrollments.includes(course._id)
-          );
-          setAllDatabaseCourses(facultyCoursesList);
-        } else {
-          setEnrolledCourses(enrollments.map((enrollment: Enrollment) => enrollment.course));
-          setAllDatabaseCourses(allCourses);
-        }
-      }
-    } catch (error: any) {
-      console.error("Error fetching data:", error);
-      setError(error.message || "Failed to load courses. Please try again later.");
+      setCourses(enrolling ? coursesWithEnrollment 
+                           : coursesWithEnrollment.filter((c: Course) => c.enrolled));
+      setError(null);
+    } catch (err: any) {
+      console.error("Error fetching courses:", err);
+      setError(err.message || "Failed to load courses. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser?._id, isFaculty]);
+  };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const resetCourseForm = () => {
-    setCourse(INITIAL_COURSE_STATE);
-  };
-
-  const handleAddCourse = async () => {
-    if (!currentUser?._id) return;
-  
-    try {
-      setIsSubmitting(true);
-      setError(null);
-  
-      if (!course.name || !course.number) {
-        throw new Error("Course name and number are required.");
-      }
-  
-      await addNewCourse();
-  
-     
-      const createdCourse = await courseClient.fetchAllCourses();
-      const latestCourse = createdCourse[createdCourse.length - 1];
-  
-      if (latestCourse) {
-        await enrollmentClient.enrollInCourse(currentUser._id, latestCourse._id);
-        setFacultyCourses((prev) => [...prev, latestCourse._id]);
-      }
-  
-      await fetchData();
-      resetCourseForm();
-    } catch (error: any) {
-      setError(error.message || "Failed to add course. Please try again.");
-    } finally {
-      fetchData(); 
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdateCourse = async () => {
-    if (!currentUser?._id) return;
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      if (!course._id || !isOwnCourse(course._id)) {
-        throw new Error("You can only edit courses you're enrolled in as faculty.");
-      }
-
-      // Validate required fields
-      if (!course.name || !course.number) {
-        throw new Error("Course name and number are required.");
-      }
-
-      await updateCourse();
-      await fetchData();
-      resetCourseForm();
-
-    } catch (error: any) {
-      setError(error.message || "Failed to update course. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteCourse = async (courseId: string) => {
-    if (!currentUser?._id) return;
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      if (!isOwnCourse(courseId)) {
-        throw new Error("You can only delete courses you're enrolled in as faculty.");
-      }
-
-      await deleteCourse(courseId);
-      await enrollmentClient.unenrollFromCourse(currentUser._id, courseId);
-      setFacultyCourses(prev => prev.filter(id => id !== courseId));
-      await fetchData();
-
-    } catch (error: any) {
-      setError(error.message || "Failed to delete course. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleEnroll = async (courseId: string) => {
-    if (!currentUser?._id) return;
+    console.log("Dashboard effect triggered:", { 
+      currentUser: currentUser?._id, 
+      isLoading, 
+      enrolling 
+    });
     
-    try {
-      setIsSubmitting(true);
-      setError(null);
-      await enrollmentClient.enrollInCourse(currentUser._id, courseId);
-      setEnrolledCourses(prev => [...prev, courseId]);
-    } catch (error: any) {
-      setError(error.message || "Failed to enroll in course. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+    if (currentUser && currentUser._id) {
+      // If we have a currentUser with an ID, attempt to fetch courses
+      fetchCourses();
+    } else {
+      // If we don’t have a currentUser yet, it might still be loading
+      // Keep isLoading true to indicate we’re waiting for user data
+      if (!currentUser) {
+        console.log("No user data yet, still loading...");
+        setIsLoading(true);
+      } else {
+        // If currentUser is defined but has no _id, user might not be logged in
+        setIsLoading(false);
+      }
     }
-  };
+  }, [currentUser?._id, enrolling]); // Removed the second useEffect
 
-  const handleUnenroll = async (courseId: string) => {
+  const updateEnrollment = async (courseId: string, shouldEnroll: boolean) => {
     if (!currentUser?._id) return;
-
     try {
-      setIsSubmitting(true);
-      setError(null);
-      await enrollmentClient.unenrollFromCourse(currentUser._id, courseId);
-      setEnrolledCourses(prev => prev.filter(id => id !== courseId));
-    } catch (error: any) {
-      setError(error.message || "Failed to unenroll from course. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      if (shouldEnroll) {
+        await enrollmentClient.enrollInCourse(currentUser._id, courseId);
+      } else {
+        await enrollmentClient.unenrollFromCourse(currentUser._id, courseId);
+      }
+      await fetchCourses();
+    } catch (err: any) {
+      setError(err.message || "Failed to update enrollment");
     }
   };
 
-  const filteredCourses = isFaculty 
-    ? allDatabaseCourses 
-    : showAllCourses 
-      ? allDatabaseCourses 
-      : allDatabaseCourses.filter((course: Course) => enrolledCourses.includes(course._id));
+  // If we are still waiting for the profile to load or user to log in, show a loading state
+  if (isLoading) return <div>Loading...</div>;
 
-  const searchFilteredCourses = filteredCourses.filter((course: Course) =>
+  // If we have no currentUser after loading finishes, prompt login
+  if (!currentUser) return <div>Please log in to view the dashboard.</div>;
+
+  const filteredCourses = courses.filter(course => 
     course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    course.number.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!currentUser) {
-    return <div className="p-4">Please log in to view the dashboard.</div>;
-  }
-
-  if (isLoading) {
-    return (
-      <div className="p-4 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  const canViewCourse = (course: Course) => {
+    return currentUser.role === "FACULTY" || currentUser.role === "ADMIN" || course.enrolled;
+  };
 
   return (
     <div className="p-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Dashboard</h1>
-        <div className="d-flex gap-2">
-          {isStudent && (
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowAllCourses(!showAllCourses)}
-            >
-              {showAllCourses ? "My Courses" : "All Courses"}
-            </button>
-          )}
-          <input
-            type="search"
-            className="form-control"
-            placeholder="Search courses..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </div>
+      <h1 className="mb-4">
+        Dashboard
+        {currentUser.role === "STUDENT" && (
+          <button
+            className="btn btn-primary float-end"
+            onClick={() => setEnrolling(!enrolling)}
+          >
+            {enrolling ? "My Courses" : "All Courses"}
+          </button>
+        )}
+      </h1>
 
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      {isFaculty && (
-        <div className="card mb-4">
-          <div className="card-body">
-            <h5 className="card-title">{course._id ? "Edit Course" : "Create New Course"}</h5>
-            <input 
-              value={course.name}
-              className="form-control mb-2"
-              onChange={(e) => setCourse({ ...course, name: e.target.value })}
-              placeholder="Course Name"
-              id="wd-course-name"
-              required
-            />
-            <input 
-              value={course.number}
-              className="form-control mb-2"
-              onChange={(e) => setCourse({ ...course, number: e.target.value })}
-              placeholder="Course Number"
-              id="wd-course-number"
-              required
-            />
-            <input 
-              value={course.startDate}
-              className="form-control mb-2"
-              type="date"
-              onChange={(e) => setCourse({ ...course, startDate: e.target.value })}
-              id="wd-course-start-date"
-            />
-            <input 
-              value={course.endDate}
-              className="form-control mb-2"
-              type="date"
-              onChange={(e) => setCourse({ ...course, endDate: e.target.value })}
-              id="wd-course-end-date"
-            />
-            <textarea 
-              value={course.description}
-              className="form-control mb-2"
-              onChange={(e) => setCourse({ ...course, description: e.target.value })}
-              placeholder="Course Description"
-              id="wd-course-description"
-            />
-            <div className="text-end">
-              {course._id ? (
-                <>
-                  <button 
-                    className="btn btn-secondary me-2"
-                    onClick={resetCourseForm}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="btn btn-warning"
-                    onClick={handleUpdateCourse}
-                    disabled={isSubmitting || !isOwnCourse(course._id)}
-                    id="wd-update-course"
-                  >
-                    {isSubmitting ? "Updating..." : "Update"}
-                  </button>
-                </>
-              ) : (
-                <button 
-                  className="btn btn-success"
-                  onClick={handleAddCourse}
-                  disabled={isSubmitting}
-                  id="wd-create-course"
-                >
-                  {isSubmitting ? "Creating..." : "Create Course"}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <input
+        type="text"
+        className="form-control mb-4"
+        placeholder="Search courses..."
+        value={searchTerm}
+        onChange={e => setSearchTerm(e.target.value)}
+      />
 
-      <h2 className="mb-4">
-        {isFaculty ? "My Courses" : "Published Courses"} ({searchFilteredCourses.length})
-      </h2>
-
-      {searchFilteredCourses.length === 0 ? (
-        <div className="alert alert-info">
-          No courses found. {searchTerm && "Try adjusting your search."}
-        </div>
-      ) : (
-        <div className="row g-4">
-          {searchFilteredCourses.map((c) => (
-            <div key={c._id} className="col-xl-3 col-lg-4 col-md-6 col-12">
-              <div className="card h-100">
-                {isStudent && (
-                  <div className="card-header border-0 bg-transparent p-0">
+      <div className="row">
+        {filteredCourses.map(course => (
+          <div key={course._id} className="col-12 col-md-6 col-lg-4 mb-4">
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title">
+                  {course.name}
+                  {currentUser.role === "STUDENT" && (enrolling || course.enrolled) && (
                     <button
-                      className={`btn w-100 ${
-                        enrolledCourses.includes(c._id)
-                          ? "btn-danger"
-                          : "btn-success"
-                      } rounded-0`}
-                      onClick={() =>
-                        enrolledCourses.includes(c._id)
-                          ? handleUnenroll(c._id)
-                          : handleEnroll(c._id)
-                      }
-                      disabled={isSubmitting}
+                      className={`btn ${course.enrolled ? "btn-danger" : "btn-success"} float-end`}
+                      onClick={() => updateEnrollment(course._id, !course.enrolled)}
                     >
-                      {isSubmitting 
-                        ? "Processing..." 
-                        : enrolledCourses.includes(c._id) 
-                          ? "Unenroll" 
-                          : "Enroll"
-                      }
+                      {course.enrolled ? "Unenroll" : "Enroll"}
                     </button>
-                  </div>
-                )}
-
-                <img
-                  src={`/images/${c.image || 'default-course.jpg'}`}
-                  alt={c.name}
-                  className="card-img-top"
-                  style={{ height: "200px", objectFit: "cover" }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/images/default-course.jpg';
+                  )}
+                </h5>
+                <h6 className="card-subtitle mb-2 text-muted">{course.number}</h6>
+                <p className="card-text">{course.description}</p>
+                <Link
+                  to={`/Kanbas/Courses/${course._id}/Home`}
+                  className="btn btn-primary w-100"
+                  style={{ textDecoration: 'none' }}
+                  onClick={(e) => {
+                    if (!canViewCourse(course)) {
+                      e.preventDefault();
+                      setError("You must be enrolled to view this course");
+                    }
                   }}
-                />
-
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{c.name}</h5>
-                  <p className="card-text text-muted small mb-2">{c.number}</p>
-                  <p className="card-text">{c.description}</p>
-                  <div className="mt-auto">
-                    <Link 
-                      to={`/Kanbas/Courses/${c._id}/Home`}
-                      className="btn btn-primary w-100"
-                    >
-                      View Course
-                    </Link>
-                  </div>
-                </div>
-
-                {isFaculty && isOwnCourse(c._id) && (
-                  <div className="card-footer bg-transparent">
-                    <button
-                      className="btn btn-warning w-100 mb-2"
-                      onClick={() => setCourse(c)}
-                      disabled={isSubmitting}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger w-100"
-                      onClick={() => handleDeleteCourse(c._id)}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
-                )}
+                >
+                  View Course
+                </Link>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
